@@ -8,7 +8,13 @@
    Zeichen fuer Zeichen laeuft und weiss, ob er in einem String, einem
    Regex-Literal, einem CSS-Block oder einem Skript steht.
 
-   Aufruf:  node strip-kommentare.js <quelle> <ziel>
+   Leere Zeilen und Einrueckung entfernt nur --kompakt. Zeilenumbrueche
+   bleiben dabei erhalten: in JavaScript kann das Weglassen eines Umbruchs
+   die Bedeutung aendern, weil der Parser an neuen Zeilen Trennstellen
+   erkennt ("return" am Zeilenende, automatische Semikolons). Nur die
+   Leerzeichen am Zeilenanfang sind gefahrlos.
+
+   Aufruf:  node strip-kommentare.js <quelle> <ziel> [--kompakt]
 */
 "use strict";
 
@@ -16,6 +22,7 @@ const fs = require("fs");
 
 const src = process.argv[2] || "trendradar.html";
 const dst = process.argv[3] || "trendradar-lean.html";
+const kompakt = process.argv.includes("--kompakt");
 
 const s = fs.readFileSync(src, "utf8");
 
@@ -210,6 +217,33 @@ while (i < s.length) {
   }
 }
 
+/* Leerzeilen und Einrueckung. Beides nur am Zeilenanfang und nur fuer
+   Zeilen, die nach dem Leerzeichenschnitt nichts mehr tragen. Der
+   Umbruch selbst bleibt: in JavaScript aendert ein fehlender Umbruch
+   die Bedeutung, weil der Parser dort Trennstellen erkennt - ein
+   "return" am Zeilenende holt sich sonst sein Argument von der
+   naechsten Zeile, und automatisch eingesetzte Semikolons fallen weg.
+   CSS ist unkritisch, solange kein Selector und kein Wert am Umbruch
+   zerschlagen wird; eine URL in content:() ist hier nicht vorhanden,
+   sonst muesste sie geschuetzt werden. */
+if (kompakt) {
+  const zeilen = out.split("\n");
+  const vorher = zeilen.length;
+  let leer = 0, eingerueckt = 0;
+  const neu = [];
+  for (const z of zeilen) {
+    if (z.trim() === "") { leer++; continue; }
+    const ohne = z.replace(/^[ \t]+/, "");
+    eingerueckt += z.length - ohne.length;
+    neu.push(ohne);
+  }
+  out = neu.join("\n");
+  stat.leerzeilen = leer;
+  stat.einrueckung = eingerueckt;
+  stat.zeilenVorher = vorher;
+  stat.zeilenNachher = neu.length;
+}
+
 fs.writeFileSync(dst, out, "utf8");
 
 const kb = (n) => (n / 1024).toFixed(1) + " KB";
@@ -225,6 +259,15 @@ console.log();
 console.log("== gelesen ==");
 console.log("  Strings          " + stat.strings);
 console.log("  Regex-Literale   " + stat.regexLiterals);
+if (kompakt) {
+  console.log();
+  console.log("== kompakt ==");
+  console.log("  Leerzeilen     " + stat.leerzeilen + " entfernt");
+  console.log("  Einrueckung    " + kb(stat.einrueckung));
+  console.log("  Zeilen         " + stat.zeilenVorher + " -> " + stat.zeilenNachher);
+  console.log("  Zeilenumbrueche erhalten - sie sind in JavaScript bedeutungstragend");
+}
+
 console.log();
 console.log("== Groesse ==");
 console.log("  vorher  " + s.length + " Bytes");
