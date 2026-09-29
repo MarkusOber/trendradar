@@ -1,0 +1,1725 @@
+<!doctype html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html lang="de">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  
+
+
+
+
+
+
+  html, body { height: 100%; }
+  body { margin: 0; }
+
+  .tr-root, .tr-root * { box-sizing: border-box; }
+
+  .tr-stage svg { width: 100%; height: 100%; display: block; }
+
+  .tr-btn {
+    font: inherit; font-size: 0.9em; line-height: 1.4;
+    padding: 6px 16px; cursor: pointer;
+    
+
+
+
+
+
+    border: 1px solid var(--tr-control, #8D8D8D);
+    background: transparent; color: inherit;
+    
+
+    border-radius: 5px;
+    transition: box-shadow .08s;
+  }
+  .tr-btn:hover { border-color: var(--tr-ink, #020E25); }
+  
+
+  .tr-btn[aria-pressed="true"] {
+    background: var(--tr-accent, #B30920);
+    border-color: var(--tr-accent, #B30920);
+    color: var(--tr-bg, #F9FBFC);
+  }
+  .tr-btn:focus-visible { outline: 3px solid var(--tr-accent, #B30920); outline-offset: 2px; }
+
+  
+
+
+  tr.tr-row:hover { background: var(--tr-row-hover, rgba(2,14,37,.05)); }
+  tr.tr-row { position: relative; }
+  tr.tr-row.is-link { cursor: pointer; }
+  
+
+
+
+
+
+
+
+
+  tr.tr-row.is-link a.tr-link::after { content: ""; position: absolute; inset: 0; }
+  tr.tr-row.is-link:focus-within {
+    background: var(--tr-row-hover, rgba(2,14,37,.05));
+    outline: 3px solid var(--tr-accent, #B30920);
+    outline-offset: -2px;
+  }
+  tr.tr-row.is-link a.tr-link:focus-visible { outline: none; }
+  .tr-blip { cursor: default; }
+  .tr-blip-link { cursor: pointer; }
+  
+
+
+  .tr-blip:hover { --tr-blip-stroke-width: var(--tr-blip-stroke-hover, 3.5px); }
+  .tr-blip.is-hl  { --tr-blip-stroke-width: var(--tr-blip-stroke-hover, 3.5px); }
+  a.tr-blip-link:hover text { text-decoration: underline; }
+  
+
+
+
+
+
+  a.tr-blip-link:focus-visible { outline: 3px solid var(--tr-accent, #B30920); }
+  a.tr-blip-link:focus-visible .tr-blip { --tr-blip-stroke-width: var(--tr-blip-stroke-hover, 3.5px); }
+  a.tr-blip-link:focus-visible text { text-decoration: underline; }
+
+  a { color: inherit; }
+  .tr-link { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+  .tr-link:hover { text-decoration-thickness: 2px; color: var(--tr-accent, #B30920); }
+
+
+  
+
+
+
+
+
+  @media (max-width: 575.98px) {
+    .tr-col-name   { width: 21% !important; }
+    .tr-col-sector { width: 96px !important; }
+    .tr-col-desc   { width: auto !important; }
+  }
+
+  
+
+
+
+
+
+  @media (max-width: 575.98px) {
+    .tr-table > thead {
+      position: absolute; top: auto; left: -10000px;
+      width: 1px; height: 1px; overflow: hidden;
+    }
+    
+
+
+
+
+
+
+
+    .tr-table,
+    .tr-table > colgroup,
+    .tr-table > tbody,
+    .tr-table > tbody > tr { display: block; width: auto; }
+    .tr-table > tbody > tr > td {
+      display: flex; justify-content: flex-end;
+      width: auto !important;
+      padding: 12px 12px 0; border: 0;
+    }
+    .tr-table > tbody > tr > td::before {
+      content: attr(data-label);
+      display: block; margin-right: auto; padding-right: 1.5rem;
+      font-family: var(--tr-font, Roboto, Helvetica Neue, Arial, sans-serif);
+      font-weight: 700; text-align: left;
+    }
+    
+
+
+    .tr-table > tbody > tr > td:last-child { border-bottom: 1px solid var(--tr-border, #595959); }
+  }
+
+  
+
+
+
+
+
+
+
+
+  @media (max-width: 575.98px) {
+    .tr-sector-label { display: none; }
+  }
+
+  
+
+
+
+
+
+
+  @media print {
+    .tr-toolbar { display: none !important; }
+    .tr-root {
+      height: auto !important; min-height: 0 !important;
+      display: block !important; padding: 0 !important;
+      background: #fff !important;
+    }
+    
+
+
+    .tr-stage { max-height: 62vh !important; break-inside: avoid; page-break-inside: avoid; }
+    .tr-legend-wrap { max-height: none !important; overflow: visible !important; display: block !important; }
+    
+
+
+    .tr-ringblock { break-inside: avoid; page-break-inside: avoid; }
+    .tr-row { break-inside: avoid; page-break-inside: avoid; }
+    a.tr-link { text-decoration: none; }
+    
+
+
+    .tr-table th, .tr-table td { padding: 4px 8px 4px 0 !important; }
+  }
+</style>
+</head>
+<body>
+
+
+
+
+<script type="application/json" id="trendradar-data">
+{
+  "schemaVersion": 1,
+  "title": "Trendradar 2026",
+  "subtitle": "Trends, die für uns relevant werden – Stand September 2026",
+  "date": "2026-09-29",
+
+  "links": { "target": "_blank" },
+
+  "layout": {
+    "legend": { "mode": "grouped" },
+    "size":   { "mode": "auto", "min": 380, "max": 660, "blip": 22, "gap": 4 }
+  },
+
+  "theme": {
+    "background": "#F9FBFC",
+    "ink": "#020E25",
+    "muted": "#495057",
+    "grid": "#DEE2E6",
+    "sectorLine": "#ADB5BD",
+    "border": "#595959",
+    "accent": "#B30920",
+    "font": "Roboto, Helvetica Neue, Arial, sans-serif",
+    "headFont": "Roboto Condensed, Roboto, Arial Narrow, Arial, sans-serif",
+    "fontSize": 15,
+    "headSize": 24,
+    "sectorLabelSize": 13,
+    "showSectorLabels": true
+  },
+
+  "rings": [
+    { "id": "adopt",  "name": "ADOPT",  "color": "#1F8904",
+      "description": "Breit belegt und erprobt. Wir investieren langfristig und empfehlen die breite Nutzung." },
+    { "id": "trial",  "name": "TRIAL",  "color": "#0B70EB",
+      "description": "Hat sich im Projektalltag bewährt. Erste echte Nutzungserfahrungen, leicht höheres Risiko." },
+    { "id": "assess", "name": "ASSESS", "color": "#FF8500",
+      "description": "Vielversprechend, aber noch ungenügend erprobt. Forschung und Prototyping lohnen sich." },
+    { "id": "hold",   "name": "HOLD",   "color": "#E50000",
+      "description": "Für Neuprojekte nicht empfohlen. Bestehende Projekte dürfen weiterlaufen." }
+  ],
+
+  "sectors": [
+    { "id": "tech",     "name": "Technologie" },
+    { "id": "society",  "name": "Verhalten & Gesellschaft" },
+    { "id": "market",   "name": "Wirtschaft & Markt" }
+  ],
+
+  "entries": [
+    { "name": "Generative KI in Support-Prozessen", "ring": "adopt", "sector": "tech",
+      "description": "Lösungsskripte und Routing laufen produktiv, Qualität ist im Alltag verifiziert.",
+      "url": "https://example.com/trend/support-ki" },
+    { "name": "Datenschutz als Produktmerkmal", "ring": "adopt", "sector": "society",
+      "description": "Datensparsamkeit entscheidet zunehmend über die Kaufakzeptanz.",
+      "target": "_self",
+      "url": "/produkte/datenschutz" },
+    { "name": "Nachhaltige Verpackung als Standard", "ring": "adopt", "sector": "market",
+      "description": "Bei mehreren Lieferanten Vorgabestandard, keine Nische mehr." },
+    { "name": "Personalisierung in Echtzeit", "ring": "adopt", "sector": "tech",
+      "description": "Segmentierung läuft ohne Batch-Nacht, Latenz im zweistelligen Millisekundenbereich.",
+      "target": "_blank",
+      "url": "https://example.com/trend/realtime?segment=alle&v=2" },
+
+    { "name": "Conversational Commerce", "ring": "trial", "sector": "market",
+      "description": "Erste Erfolge im Service, für den reinen Verkauf noch zu unsicher.",
+      "url": "#tr-head" },
+    { "name": "Synthetic Media für Produktbilder", "ring": "trial", "sector": "market",
+      "url": "https://example.com/trend/synthetic-media" },
+    { "name": "Retail Media Networks", "ring": "trial", "sector": "market",
+      "description": "Erste Kampagnen laufen, Reichweitenmessung ist noch nicht belastbar." },
+    { "name": "Predictive Maintenance im Filialnetz", "ring": "trial", "sector": "tech",
+      "description": "Zwei Pilotfiliale, messbare Ausfallreduktion, Skalierung offen.",
+      "target": "_self",
+      "url": "https://example.com/trend/predictive-maintenance" },
+
+    { "name": "KI-Agenten statt Chatbots", "ring": "assess", "sector": "tech",
+      "description": "Agenten handeln statt nur antworten. Fehlerpotenzial noch nicht ausreichend begrenzt.",
+      "url": "https://example.com/trend/agenten#sicherheit" },
+    { "name": "On-device Modelle", "ring": "assess",
+      "description": "Datenschutzvorteil ist klar, Modelle sind für unsere Aufgaben noch zu groß. Ohne sector, landet der Trend deshalb im gleichmäßig gewählten Winkel des Rings." },
+    { "name": "Micro-Communities statt Algorithmus-Feeds", "ring": "assess", "sector": "society",
+      "description": "Kleine, moderierte Gruppen zeigen höhere Bindung. Monetarisierbarkeit offen." },
+    { "name": "Voice & PoS im Verkauf (\"nahe Echtzeit\")", "ring": "assess", "sector": "market",
+      "description": "Technisch machbar <aber> die Akzeptanz im Verkauf ist ungeklärt: &, <, >, \" und ' werden korrekt escaped." },
+
+    { "name": "Rückgewinnung per Community", "ring": "hold", "sector": "market" },
+    { "name": "Zweitnutzung von Lagerflächen", "ring": "hold", "sector": "society",
+      "description": "Anlauf und Flächenkonflikte wiegen den theoretischen Ertrag nicht auf. Dieser Text ist absichtlich lang, damit man sieht, wie die Beschreibungsspalte begrenzt wird: sie kappt bei etwa 90 Zeichen und legt den vollen Text als Tooltip daneben, statt die Tabelle in die Breite zu treiben." }
+  ]
+}
+</script>
+
+<main class="tr-root" id="tr-root">
+  <header class="tr-head" id="tr-head"></header>
+  <div class="tr-stage" id="tr-stage"></div>
+  <div class="tr-legend-wrap" id="tr-legend-wrap">
+    <div class="tr-toolbar" id="tr-toolbar"></div>
+    <div class="tr-legend" id="tr-legend"></div>
+  </div>
+</main>
+
+<noscript>
+  <div style="max-width:70ch;margin:40px auto;font:15px/1.6 system-ui,sans-serif">
+    <h1>Trendradar</h1>
+    <p>Für die Anzeige wird JavaScript benötigt. In Umgebungen, die JavaScript
+    blockieren, erzeuge stattdessen die statische Variante:</p>
+    <p><code>node build.js trendradar.html -o radar.html</code></p>
+  </div>
+</noscript>
+
+
+
+
+
+
+<script id="trendradar-engine">
+const TrendRadar = (function () {
+  "use strict";
+
+  var TAU = Math.PI * 2;
+
+  
+
+
+  var RING_FALLBACK = ["#1F8904", "#0B70EB", "#FF8500", "#E50000", "#0dcaf0", "#3D4657"];
+
+  var THEME_DEFAULT = {
+    background: "#F9FBFC", ink: "#020E25", muted: "#495057",
+    grid: "#DEE2E6", sectorLine: "#ADB5BD", border: "#595959",
+    
+
+    control: "#8D8D8D",
+    accent: "#B30920", rowHover: "rgba(2,14,37,.05)",
+    bandOpacity: 0.12, bandOpacityAlt: 0.06,
+    blipStroke: "#00000026", blipStrokeWidth: 2,
+    font: "Roboto, Helvetica Neue, Arial, sans-serif",
+    headFont: "Roboto Condensed, Roboto, Arial Narrow, Arial, sans-serif",
+    fontSize: 15, headSize: 24, sectorLabelSize: 13, showSectorLabels: true,
+    radius: 5
+  };
+
+  var LAYOUT_DEFAULT = {
+    legend: { mode: "grouped" },
+    size:   { mode: "auto", min: 380, max: 660, radius: 480, blip: 22, gap: 4 }
+  };
+
+  
+
+
+
+  var S = {
+    
+
+
+
+
+
+    root: "margin:0;box-sizing:border-box;display:grid;gap:14px;padding:16px;height:100vh;height:100dvh;min-height:320px;" +
+          "background:var(--tr-bg,#F9FBFC);color:var(--tr-ink,#020E25);" +
+          "font-family:var(--tr-font,Roboto,Helvetica Neue,Arial,sans-serif);font-size:var(--tr-font-size,15px);" +
+          "grid-template-areas:'head' 'stage' 'legend';grid-template-rows:auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);",
+    head: "grid-area:head;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px",
+    headMeta: "color:var(--tr-muted,#495057)",
+    stage:
+"grid-area:stage;display:grid;place-items:center;min-height:0;min-width:0;min-height:200px;overflow:hidden",
+    
+
+    svgFit: "display:block;width:100%;height:100%;min-width:0;min-height:0",
+    
+
+
+    wrap: "grid-area:legend;min-height:0;max-height:38vh;max-height:38dvh;overflow:auto;display:flex;flex-direction:column;gap:10px",
+    toolbar: "display:flex;gap:8px;align-items:center;justify-content:flex-end;flex:none",
+    
+
+
+
+
+    legend: "display:flex;flex-direction:column;gap:30px",
+    block: "display:block",
+    ringHead: "display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:0 0 12px",
+    
+
+
+
+
+    
+
+
+
+    table: "width:100%;border-collapse:collapse;table-layout:fixed;vertical-align:top",
+    th: "text-align:left;font-size:1em;font-weight:700;color:var(--tr-ink,#020E25);" +
+        "padding:12px;background:transparent;border-top:0;border-bottom:2px solid var(--tr-border,#595959)",
+    
+
+
+    td: "vertical-align:top;padding:12px;color:var(--tr-ink,#020E25);background:transparent;" +
+        "border-bottom:1px solid var(--tr-border,#595959);line-height:1.45;overflow-wrap:anywhere;",
+    
+    tdNum: "vertical-align:top;padding:12px;color:var(--tr-ink,#020E25);background:transparent;" +
+        "border-bottom:1px solid var(--tr-border,#595959);line-height:1.45;width:48px;",
+    
+
+
+
+
+
+    muted: "color:var(--tr-muted,#495057)",
+    
+
+
+
+    sr: "position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0",
+    errBox: "margin:40px auto;max-width:64ch;padding:20px 24px;border:1px solid var(--tr-border,#595959);border-radius:5px;line-height:1.6"
+  };
+
+
+  
+
+  function str(v, d) { return typeof v === "string" && v.trim() ? v.trim() : (d || ""); }
+  function num(v, d) { var n = Number(v); return isFinite(n) ? n : d; }
+  function isHex(c) { return typeof c === "string" && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(c.trim()); }
+  function color(v, d) { return isHex(v) ? v.trim() : d; }
+
+  
+
+
+
+
+  function fontStack(v, d) {
+    var clean = str(v, "").replace(/["'\\;<>{}()]/g, " ").replace(/\s+/g, " ").trim();
+    return clean || d;
+  }
+
+  
+
+  function cssValue(v, d) {
+    var clean = str(v, "").replace(/["'\\;<>{}]/g, "").replace(/\s+/g, " ").trim();
+    return clean || d;
+  }
+
+  
+
+
+
+  function fontVar(theme, head) {
+    return "var(--tr-" + (head ? "head-" : "") + "font," + fontStack(head ? theme.headFont : theme.font, "sans-serif") + ")";
+  }
+
+  
+
+
+  function headTitleCss(theme) {
+    return "margin:0;font-family:" + fontVar(theme, true) +
+      ";font-size:" + nOf(theme.headSize, 24, 10, 96) + "px;line-height:1.2;font-weight:700";
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  
+
+
+
+
+
+
+
+
+  function inkOn(hex) {
+    var m = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.exec(String(hex).trim());
+    if (!m) return "#111111";
+    var h = m[1];
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    function ch(i) {
+      var v = parseInt(h.substr(i, 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    }
+    var L = 0.2126 * ch(0) + 0.7152 * ch(2) + 0.0722 * ch(4);
+    return 1.05 / (L + 0.05) >= 4.5 ? "#ffffff" : "#111111";
+  }
+
+  function mergeDeep(base, over) {
+    var out = {};
+    var k;
+    for (k in base) if (Object.prototype.hasOwnProperty.call(base, k)) out[k] = base[k];
+    if (!over || typeof over !== "object") return out;
+    for (k in over) {
+      if (!Object.prototype.hasOwnProperty.call(over, k) || over[k] === undefined) continue;
+      var v = over[k], b = base[k];
+      if (v && typeof v === "object" && !Array.isArray(v) && b && typeof b === "object" && !Array.isArray(b)) out[k] = mergeDeep(b, v);
+      else out[k] = v;
+    }
+    return out;
+  }
+
+  function nOf(v, d, lo, hi) { v = num(v, d); if (v < lo) v = lo; if (v > hi) v = hi; return v; }
+
+
+  
+
+  function validate(data) {
+    var errors = [], warnings = [];
+    var out = { meta: {}, rings: [], sectors: [], entries: [], warnings: warnings, errors: errors };
+
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      errors.push("Keine Daten gefunden. Der JSON-Block \"trendradar-data\" ist leer oder ungültig.");
+      return out;
+    }
+    out.meta = {
+      title: str(data.title, "Trendradar"),
+      subtitle: str(data.subtitle, ""),
+      date: str(data.date, ""),
+      schemaVersion: num(data.schemaVersion, 1)
+    };
+
+    var rawRings = Array.isArray(data.rings) ? data.rings : [];
+    var seenRing = {};
+    rawRings.forEach(function (r, i) {
+      if (!r || typeof r !== "object") { warnings.push("Ring #" + (i + 1) + " ist kein Objekt – übersprungen."); return; }
+      var id = str(r.id, "");
+      if (!id) { warnings.push("Ring #" + (i + 1) + " hat keine \"id\" – übersprungen."); return; }
+      if (seenRing[id]) { warnings.push("Ring-id \"" + id + "\" kommt doppelt vor – erstes Vorkommen behalten."); return; }
+      seenRing[id] = true;
+      out.rings.push({
+        id: id,
+        name: str(r.name, id),
+        color: color(r.color, RING_FALLBACK[out.rings.length % RING_FALLBACK.length]),
+        description: str(r.description, ""),
+        index: out.rings.length
+      });
+    });
+    if (!out.rings.length) errors.push("Keine Ringe definiert. \"rings\" braucht mindestens 2 Einträge mit \"id\", \"name\" und \"color\".");
+    else if (out.rings.length > 8) warnings.push(out.rings.length + " Ringe sind sehr viele – das Radar wird unlesbar. 3 bis 6 sind Erfahrungswert.");
+
+    var rawSectors = Array.isArray(data.sectors) ? data.sectors : [];
+    var seenSector = {};
+    rawSectors.forEach(function (s, i) {
+      if (!s || typeof s !== "object") { warnings.push("Sektor #" + (i + 1) + " ist kein Objekt – übersprungen."); return; }
+      var id = str(s.id, "");
+      if (!id) { warnings.push("Sektor #" + (i + 1) + " hat keine \"id\" – übersprungen."); return; }
+      if (seenSector[id]) { warnings.push("Sektor-id \"" + id + "\" kommt doppelt vor – erstes Vorkommen behalten."); return; }
+      seenSector[id] = true;
+      out.sectors.push({ id: id, name: str(s.name, id), index: out.sectors.length });
+    });
+
+    var ringById = {}, sectorById = {};
+    out.rings.forEach(function (r) { ringById[r.id] = r; });
+    out.sectors.forEach(function (s) { sectorById[s.id] = s; });
+
+    var rawEntries = Array.isArray(data.entries) ? data.entries : [];
+    rawEntries.forEach(function (e, i) {
+      var at = "Eintrag #" + (i + 1);
+      if (!e || typeof e !== "object") { warnings.push(at + " ist kein Objekt – übersprungen."); return; }
+      var name = str(e.name, "");
+      if (!name) { warnings.push(at + " hat keinen \"name\" – übersprungen."); return; }
+      at = "\"" + name + "\"";
+      var ring = ringById[str(e.ring, "")];
+      if (!ring) { warnings.push(at + ": unbekannte ring-ID \"" + str(e.ring, "(leer)") + "\" – übersprungen."); return; }
+      var sector = null;
+      var sid = str(e.sector, "");
+      if (sid) {
+        sector = sectorById[sid] || null;
+        if (!sector) warnings.push(at + ": unbekannte sector-ID \"" + sid + "\" – wie ein Eintrag ohne Sektor behandelt.");
+      }
+      out.entries.push({
+        name: name,
+        ring: ring,
+        sector: sector,
+        description: str(e.description, ""),
+        url: str(e.url, ""),
+        
+
+        target: (e.target === "_self" || e.target === "_blank") ? e.target : null,
+        inputIndex: out.entries.length,
+        ringIndex: ring.index
+      });
+    });
+
+    if (!out.entries.length) errors.push("Keine Einträge definiert. \"entries\" braucht Objekte mit \"name\" und einer gültigen \"ring\"-ID.");
+    else {
+      if (out.entries.length > 60) warnings.push(out.entries.length + " Trends sind sehr viele – die Blips werden dicht. Ab ca. 40 lohnt sich \"layout.size.max\" erhöhen.");
+      var perRing = {};
+      out.entries.forEach(function (e) { perRing[e.ring.id] = (perRing[e.ring.id] || 0) + 1; });
+      out.rings.forEach(function (r) {
+        if (!perRing[r.id]) warnings.push("Ring \"" + r.name + "\" ist leer – der Ring bleibt leer. Das ist erlaubt, sieht aber unfertig aus.");
+      });
+    }
+
+    out.theme = mergeDeep(THEME_DEFAULT, data.theme);
+    out.theme.showSectorLabels = data.theme && data.theme.showSectorLabels !== undefined
+      ? !!data.theme.showSectorLabels : true;
+    
+
+
+
+    out.theme.font = fontStack(out.theme.font, THEME_DEFAULT.font);
+    out.theme.headFont = fontStack(out.theme.headFont, THEME_DEFAULT.headFont);
+    out.theme.rowHover = cssValue(out.theme.rowHover, THEME_DEFAULT.rowHover);
+    out.theme.blipStroke = isHex(out.theme.blipStroke) ? out.theme.blipStroke.trim() : THEME_DEFAULT.blipStroke;
+    out.theme.bandOpacity = nOf(out.theme.bandOpacity, THEME_DEFAULT.bandOpacity, 0, 1);
+    out.theme.bandOpacityAlt = nOf(out.theme.bandOpacityAlt, THEME_DEFAULT.bandOpacityAlt, 0, 1);
+    out.theme.fontSize = nOf(out.theme.fontSize, THEME_DEFAULT.fontSize, 8, 48);
+    out.theme.headSize = nOf(out.theme.headSize, THEME_DEFAULT.headSize, 10, 96);
+    out.theme.radius = nOf(out.theme.radius, THEME_DEFAULT.radius, 0, 40);
+
+    out.layout = mergeDeep(LAYOUT_DEFAULT, data.layout);
+    out.layout.legend = mergeDeep(LAYOUT_DEFAULT.legend, (data.layout || {}).legend);
+    out.layout.size = mergeDeep(LAYOUT_DEFAULT.size, (data.layout || {}).size);
+    out.layout.size.blip = nOf(out.layout.size.blip, 22, 10, 60);
+    out.layout.size.gap = nOf(out.layout.size.gap, 4, 0, 30);
+    out.layout.size.min = nOf(out.layout.size.min, 380, 200, 4000);
+    out.layout.size.max = nOf(out.layout.size.max, 660, 200, 4000);
+    if (out.layout.size.max < out.layout.size.min) out.layout.size.max = out.layout.size.min;
+    out.layout.size.radius = nOf(out.layout.size.radius, 480, 200, 4000);
+    out.layout.size.mode = out.layout.size.mode === "fixed" ? "fixed" : "auto";
+    out.layout.legend.mode = out.layout.legend.mode === "flat" ? "flat" : "grouped";
+
+
+    out.links = { target: (data.links && data.links.target === "_self") ? "_self" : "_blank" };
+
+    return out;
+  }
+
+
+  
+
+  
+
+
+  function balancedSplit(n, L) {
+    var base = Math.floor(n / L), extra = n % L, out = [];
+    for (var j = 0; j < L; j++) out.push(base + (j < extra ? 1 : 0));
+    return out;
+  }
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  function chooseLanes(n, r0, r1, span, blip, gap) {
+    var depth = Math.max(1e-6, r1 - r0);
+    var step = blip + gap;
+    var maxLanes = Math.max(1, Math.min(n, Math.floor(depth / step)));
+    var best = null, L, j;
+
+    function evaluate(L) {
+      var laneDepth = depth / L;
+      var counts = balancedSplit(n, L);
+      var feasible = true, rMean = 0, capacity = 0;
+      for (j = 0; j < L; j++) {
+        var rMid = r0 + (j + 0.5) * laneDepth;
+        var cap = Math.floor((span * rMid) / step);
+        capacity += cap;
+        if (counts[j] > cap) feasible = false;
+        rMean += rMid;
+      }
+      var arcGap = (span * (rMean / L)) / (n / L);
+      return {
+        L: L, laneDepth: laneDepth, off: 0, counts: counts, feasible: feasible,
+        capacity: capacity, score: Math.abs(Math.log(arcGap / laneDepth))
+      };
+    }
+
+    for (L = 1; L <= maxLanes; L++) {
+      var cand = evaluate(L);
+      if (cand.feasible && (!best || cand.score < best.score - 1e-9)) best = cand;
+    }
+    if (best) return best;
+
+    
+
+    var tight = evaluate(maxLanes);
+    tight.feasible = false;
+    return tight;
+  }
+
+  function placeGroup(g, band, delta, blip, pick) {
+    var a0 = g.sector ? g.sector.index * delta : 0;
+    var out = [], k = 0;
+    for (var j = 0; j < pick.counts.length; j++) {
+      var count = pick.counts[j];
+      var r = band.r0 + pick.off + (j + 0.5) * pick.laneDepth;
+      for (var sIdx = 0; sIdx < count; sIdx++) {
+        var a = a0 + (sIdx + 0.5) * delta / count;
+        out.push({
+          entry: g.entries[k++],
+          x: r * Math.sin(a),
+          y: -r * Math.cos(a),
+          r: blip / 2,
+          angle: a,
+          radius: r
+        });
+      }
+    }
+    return out;
+  }
+
+  
+
+  function placeAll(norm, groups, R, blip, gap) {
+    var nR = norm.rings.length;
+    var nS = norm.sectors.length;
+    var delta = nS ? TAU / nS : TAU;
+    var pitch = R / nR;
+    var pad = blip / 2 + gap / 2;
+
+    var bands = norm.rings.map(function (ring, i) {
+      return { ring: ring, index: i, r0: i * pitch + pad, r1: (i + 1) * pitch - pad, boundary: (i + 1) * pitch };
+    });
+
+    var wedges = [];
+    if (nS) {
+      norm.sectors.forEach(function (sector) {
+        wedges.push({ sector: sector, index: sector.index, a0: sector.index * delta, a1: (sector.index + 1) * delta });
+      });
+    } else {
+      wedges.push({ sector: null, index: 0, a0: 0, a1: TAU });
+    }
+
+    var blips = [];
+    var ok = true;
+    var worst = null;
+    groups.forEach(function (g) {
+      var band = bands[g.ring.index];
+      
+
+      var span = g.sector ? delta : TAU;
+      var pick = chooseLanes(g.entries.length, band.r0, band.r1, span, blip, gap);
+      if (!pick.feasible) {
+        ok = false;
+        var ratio = g.entries.length / Math.max(1, pick.capacity);
+        if (!worst || ratio > worst.ratio) worst = { g: g, n: g.entries.length, capacity: pick.capacity, ratio: ratio };
+      }
+      var placed = placeGroup(g, band, span, blip, pick);
+      placed.forEach(function (p) {
+        p.ring = g.ring;
+        p.sector = g.sector;
+        blips.push(p);
+      });
+    });
+
+    
+
+
+
+
+    var minDist = Infinity;
+    for (var i = 0; i < blips.length; i++) {
+      for (var k = i + 1; k < blips.length; k++) {
+        var dd = Math.hypot(blips[i].x - blips[k].x, blips[i].y - blips[k].y);
+        if (dd < minDist) minDist = dd;
+      }
+    }
+    if (blips.length < 2) minDist = blip;
+    if (minDist < blip - 1e-6) ok = false;
+
+    return {
+      ok: ok, blips: blips, bands: bands, wedges: wedges, delta: delta, nS: nS,
+      pitch: pitch, R: R, worst: worst, minDist: minDist
+    };
+  }
+
+
+  
+
+  function computeLayout(raw) {
+    var norm = raw && raw.rings ? raw : validate(raw);
+    var size = norm.layout.size;
+    var blip = size.blip, gap = size.gap;
+    var warnings = norm.warnings.slice();
+
+    
+    var entries = norm.entries.slice().sort(function (a, b) {
+    });
+    entries.forEach(function (e, i) { e.number = i + 1; });
+
+    
+
+
+
+
+
+
+    var groups = [];
+    norm.rings.forEach(function (ring) {
+      var here = entries.filter(function (e) { return e.ringIndex === ring.index; });
+      if (!norm.sectors.length) {
+        if (here.length) groups.push({ ring: ring, sector: null, entries: here });
+        return;
+      }
+      var buckets = norm.sectors.map(function (s) { return { ring: ring, sector: s, entries: [] }; });
+      here.filter(function (e) { return !e.sector; }).forEach(function (e) {
+        
+        var target = buckets.reduce(function (a, b) { return b.entries.length < a.entries.length ? b : a; });
+        target.entries.push(e);
+      });
+      here.filter(function (e) { return !!e.sector; }).forEach(function (e) {
+        buckets[e.sector.index].entries.push(e);
+      });
+      buckets.forEach(function (b) { if (b.entries.length) groups.push(b); });
+    });
+
+    
+    var R = size.mode === "fixed" ? size.radius : size.min;
+    var geo = null, guard = 0, overflow = false;
+    while (guard++ < 40) {
+      geo = placeAll(norm, groups, R, blip, gap);
+      if (geo.ok) break;
+      if (size.mode === "fixed") { overflow = true; break; }
+      var next = Math.min(R * 1.12, size.max);
+      if (next <= R + 0.5) {
+        R = size.max;
+        geo = placeAll(norm, groups, R, blip, gap);
+        overflow = !geo.ok;
+        break;
+      }
+      R = next;
+    }
+    if (overflow) {
+      
+
+
+      var needR = null;
+      if (size.mode !== "fixed") {
+        for (var probe = size.max * 1.02, steps = 0; probe < 4000 && steps < 220; probe *= 1.02, steps++) {
+          if (placeAll(norm, groups, probe, blip, gap).ok) { needR = probe; break; }
+        }
+      }
+      var where = geo.worst
+        ? "Ring \"" + geo.worst.g.ring.name + "\"" + (geo.worst.g.sector ? " / Sektor \"" + geo.worst.g.sector.name + "\"" : "") +
+          " braucht allein " + geo.worst.n + " Plätze, es passen " + geo.worst.capacity + "."
+        : "";
+      var need = needR
+        ? "Ab Radius " + Math.ceil(needR) + " wäre alles überlappungsfrei – setze \"layout.size.max\" entsprechend."
+        : "Auch bei einem sehr großen Radius reicht der Platz nicht.";
+      
+
+      if (needR && needR > size.max * 2.2) {
+        need += " Achtung: Bei so großem Radius sind die Blips nur noch " +
+          Math.round(blip * 500 / needR) + " px breit (in einem 500 px hohen Rahmen). " +
+          "Besser ist es, \"layout.size.blip\" zu verkleinern, einen weiteren Ring anzulegen " +
+          "oder auf Sektoren zu verzichten.";
+      }
+      warnings.push(
+        "Überfüllt: Bei Radius " + Math.round(size.max) + " passen nicht alle Blips ohne Überlappung " +
+        "(geringster Abstand " + geo.minDist.toFixed(1) + " statt " + blip + "). " + where + " " + need
+      );
+    }
+
+    
+    var t = norm.theme;
+    var labelSize = nOf(t.sectorLabelSize, 13, 8, 40);
+    var labelR = R + Math.max(10, labelSize * 0.9);
+    var labels = [];
+    if (t.showSectorLabels && geo.nS >= 3) {
+      geo.wedges.forEach(function (w) {
+        if (!w.sector) return;
+        var chord = 2 * labelR * Math.sin(Math.min(geo.delta, Math.PI) / 2);
+        var maxChars = Math.floor(chord / (labelSize * 0.55));
+        if (maxChars < 3) return;
+        var name = w.sector.name;
+        var shown = name.length > maxChars ? name.slice(0, Math.max(1, maxChars - 1)) + "\u2026" : name;
+        var mid = (w.a0 + w.a1) / 2;
+        var x = labelR * Math.sin(mid), y = -labelR * Math.cos(mid);
+        labels.push({ name: name, text: shown, x: x, y: y, truncated: name.length > maxChars });
+      });
+    }
+    if (labels.length && labels[0].truncated) {
+      warnings.push("Sektor-Namen am Rand sind gekürzt. Die vollständigen Namen stehen in der Legende.");
+    }
+
+    var half = R + 10;
+    labels.forEach(function (l) {
+      half = Math.max(half, Math.abs(l.x) + l.text.length * labelSize * 0.3, Math.abs(l.y) + labelSize * 0.7);
+    });
+    var W = 2 * half;
+    
+
+    var vb = function (v) { return Math.round(v * 100) / 100; };
+
+    
+
+    geo.blips.sort(function (a, b) { return a.entry.number - b.entry.number; });
+
+    return {
+      meta: norm.meta,
+      theme: norm.theme,
+      layout: norm.layout,
+      links: norm.links,
+      size: { blip: blip, gap: gap, radius: R, mode: size.mode, numberFont: blip * 0.52 },
+      radius: R,
+      pitch: geo.pitch,
+      delta: geo.delta,
+      
+
+
+      minDist: geo.minDist,
+      bands: geo.bands,
+      wedges: geo.wedges,
+      sectorLabels: labels,
+      blips: geo.blips,
+      viewBox: [vb(-half), vb(-half), vb(W), vb(W)].join(" "),
+      overflow: overflow,
+      warnings: warnings,
+      groups: groups
+    };
+  }
+
+
+  function pt(r, a) { return (r * Math.sin(a)).toFixed(3) + " " + (-r * Math.cos(a)).toFixed(3); }
+  function px(r, a) { return (r * Math.sin(a)).toFixed(3); }
+  function py(r, a) { return (-r * Math.cos(a)).toFixed(3); }
+
+  function wedgePath(r0, r1, a0, a1) {
+    if (a1 - a0 >= TAU - 1e-9) {
+      
+      return "M " + (r1).toFixed(3) + " 0 A " + r1.toFixed(3) + " " + r1.toFixed(3) + " 0 1 1 " + (-r1).toFixed(3) + " 0 A " +
+        r1.toFixed(3) + " " + r1.toFixed(3) + " 0 1 1 " + r1.toFixed(3) + " 0 Z " +
+        "M " + (r0).toFixed(3) + " 0 A " + r0.toFixed(3) + " " + r0.toFixed(3) + " 0 1 0 " + (-r0).toFixed(3) + " 0 A " +
+        r0.toFixed(3) + " " + r0.toFixed(3) + " 0 1 0 " + r0.toFixed(3) + " 0 Z";
+    }
+    var large = (a1 - a0) > Math.PI ? 1 : 0;
+    return "M " + pt(r0, a0) +
+      " A " + r0.toFixed(3) + " " + r0.toFixed(3) + " 0 " + large + " 1 " + pt(r0, a1) +
+      " L " + pt(r1, a1) +
+      " A " + r1.toFixed(3) + " " + r1.toFixed(3) + " 0 " + large + " 0 " + pt(r1, a0) + " Z";
+  }
+
+  function describe(layout) {
+    var names = layout.bands.map(function (b) { return b.ring.name; });
+    return layout.meta.title + ": " + layout.blips.length + " Trends in " + names.length +
+      " Ringen (" + names.join(", ") + ")" +
+      (layout.wedges[0] && layout.wedges[0].sector ? " und " + layout.wedges.length + " Sektoren" : "") + ". " +
+      "Die Nummerierung folgt der Legende unter dem Radar.";
+  }
+
+  
+
+  function renderSVG(layout) {
+    var t = layout.theme;
+    var out = [];
+    
+
+
+
+    out.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + layout.viewBox + '"' +
+      ' preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + esc(describe(layout)) + '"' +
+      ' style="' + S.svgFit + '">');
+    out.push("<title>" + esc(layout.meta.title) + "</title>");
+    out.push("<desc>" + esc(describe(layout)) + "</desc>");
+
+    
+    out.push("<g>");
+    layout.bands.forEach(function (band) {
+      layout.wedges.forEach(function (w) {
+        var even = (band.index + w.index) % 2 === 0;
+        out.push('<path d="' + wedgePath(band.r0, band.r1, w.a0, w.a1) + '" fill="' + band.ring.color +
+          '" fill-opacity="' + (even ? t.bandOpacity : t.bandOpacityAlt) + '" fill-rule="evenodd"/>');
+      });
+    });
+    out.push("</g>");
+
+    
+    out.push("<g>");
+    layout.bands.forEach(function (band) {
+      if (band.boundary > 0.5) {
+        out.push('<circle cx="0" cy="0" r="' + band.boundary.toFixed(3) + '" fill="none" stroke="' + t.grid +
+          '" stroke-width="1"/>');
+      }
+    });
+    
+    if (layout.wedges[0] && layout.wedges[0].sector) {
+      var pad = layout.size.blip / 2 + layout.size.gap / 2;
+      layout.wedges.forEach(function (w) {
+        out.push('<line class="tr-sectorline" x1="' + px(pad, w.a0) + '" y1="' + py(pad, w.a0) + '"' +
+          ' x2="' + px(layout.radius, w.a0) + '" y2="' + py(layout.radius, w.a0) + '"' +
+          ' stroke="' + t.sectorLine + '" stroke-width="1"/>');
+      });
+    }
+    out.push("</g>");
+
+    
+    if (layout.sectorLabels.length) {
+      out.push("<g>");
+      layout.sectorLabels.forEach(function (l) {
+        out.push('<text class="tr-sector-label" x="' + l.x.toFixed(2) + '" y="' + l.y.toFixed(2) + '" text-anchor="middle"' +
+          ' dominant-baseline="central" style="fill:' + t.muted + ';font-family:' + fontVar(t, true) + ';' +
+          'font-size:' + nOf(t.sectorLabelSize, 13, 8, 40) + 'px;font-weight:700">' + esc(l.text) + "</text>");
+      });
+      out.push("</g>");
+    }
+
+    
+    out.push('<g class="tr-blips">');
+    layout.blips.forEach(function (b) {
+      var name = b.entry.name;
+      var label = name + " \u00b7 " + b.ring.name + " \u00b7 " + b.ring.description;
+      var inner =
+        '<circle cx="0" cy="0" r="' + b.r.toFixed(2) + '" style="fill:' + b.ring.color +
+          ';stroke:var(--tr-blip-stroke,' + t.blipStroke + ');stroke-width:var(--tr-blip-stroke-width,' + t.blipStrokeWidth + ')"/>' +
+        '<text class="tr-blip-nr" x="0" y="0" text-anchor="middle" dominant-baseline="central" style="fill:' + inkOn(b.ring.color) +
+          ';font-family:' + fontVar(t, false) + ';font-size:' + layout.size.numberFont.toFixed(2) +
+          'px;font-weight:700;font-variant-numeric:tabular-nums;pointer-events:none">' + b.entry.number + "</text>" +
+        "<title>" + esc(label) + "</title>";
+
+      var g = '<g class="tr-blip" data-nr="' + b.entry.number + '" transform="translate(' +
+        b.x.toFixed(3) + " " + b.y.toFixed(3) + ')">' + inner + "</g>";
+
+      if (b.entry.url) {
+        var bt = linkTarget(b.entry, layout.links.target);
+        
+
+
+
+
+
+        out.push('<a class="tr-blip-link" href="' + esc(b.entry.url) + '"' +
+          (bt ? ' target="' + bt + '" rel="noopener noreferrer"' : "") +
+          ' style="cursor:pointer" aria-label="' +
+          esc(b.entry.number + ": " + name + " \u00b7 " + b.ring.name + " \u00f6ffnen") +
+          '">' + g + "</a>");
+      } else {
+        out.push(g);
+      }
+    });
+    out.push("</g>");
+
+    out.push("</svg>");
+    return out.join("");
+  }
+
+
+  function chip(style, ring) {
+    return '<span class="tr-chip" style="' + style + 'background:' + ring.color +
+      ';border-radius:3px;width:12px;height:12px;flex:none;display:inline-block;transform:translateY(1px)"></span>';
+  }
+
+  
+
+
+  function nrBadge(ring, n) {
+    return '<span class="tr-nr" style="display:inline-flex;align-items:center;justify-content:center;' +
+      'width:22px;height:22px;border-radius:50%;background:' + ring.color + ';color:' + inkOn(ring.color) +
+      '">' + esc(n) + "</span>";
+  }
+
+  
+
+
+
+
+
+
+  function linkTarget(e, def) {
+    if (!e.url || e.url.charAt(0) === "#") return null;
+    return e.target || def;
+  }
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  function rowTitle(e) {
+    return e.url ? e.url : "";
+  }
+
+  function nameCell(e, def) {
+    if (!e.url) return esc(e.name);
+    var t = linkTarget(e, def);
+    var titel = rowTitle(e);
+    return '<a class="tr-link" href="' + esc(e.url) + '"' +
+      (titel ? ' title="' + esc(titel) + '"' : "") +
+      (t ? ' target="' + t + '" rel="noopener noreferrer"' : "") + ">" + esc(e.name) + "</a>";
+  }
+
+  
+
+
+  function descCell(e) {
+    if (!e.description) return '<td data-label="Beschreibung" style="' + S.td + '">–</td>';
+    return '<td data-label="Beschreibung" style="' + S.td + '"><div>' +
+      esc(e.description) + "</div></td>";
+  }
+
+  
+
+  
+
+
+
+
+
+
+
+  var COLS = {
+    num:    { w: "48px", head: "Nr" },
+    name:   { w: "28%",  head: "Trend" },
+    ring:   { w: "92px", head: "Ring" },
+    sector: { w: "17%",  head: "Sektor" },
+    desc:   { w: "auto", head: "Beschreibung" }
+  };
+
+  function colgroup(keys) {
+    return "<colgroup>" + keys.map(function (k) {
+      
+
+
+      return '<col class="tr-col-' + k + '" style="width:' + COLS[k].w + '">';
+    }).join("") + "</colgroup>";
+  }
+
+  
+
+
+  function headRow(keys) {
+    return "<tr>" + keys.map(function (k) {
+      return '<th scope="col" style="' + S.th + '">' + COLS[k].head + "</th>";
+    }).join("") + "</tr>";
+  }
+
+  
+
+
+
+  function tabelleCaption(text) {
+    return '<caption style="' + S.sr + '">' + esc(text) + "</caption>";
+  }
+
+  
+
+  function legendColumns(hasSector, withRing) {
+    return ["num", "name"]
+      .concat(withRing ? ["ring"] : [])
+      .concat(hasSector ? ["sector"] : [])
+      .concat(["desc"]);
+  }
+
+  
+
+
+
+
+  function legendRow(b, hasSector, withRing, target) {
+    var e = b.entry;
+    return '<tr class="tr-row' + (e.url ? " is-link" : "") + '" data-nr="' + e.number + '">' +
+      '<td data-label="Nr" style="' + S.tdNum + '">' + nrBadge(b.ring, e.number) + "</td>" +
+      '<td data-label="Trend" style="' + S.td + '">' + nameCell(e, target) + "</td>" +
+      (withRing ? '<td data-label="Ring" style="' + S.td + '">' + chip("", b.ring) + " " + esc(b.ring.name) + "</td>" : "") +
+      (hasSector
+        ? '<td data-label="Sektor" style="' + S.td + '">' +
+          (e.sector ? esc(e.sector.name) : '<span style="' + S.muted + '">–</span>') + "</td>"
+        : "") +
+      descCell(e) + "</tr>";
+  }
+
+  function renderLegendHTML(layout, mode) {
+    var target = layout.links.target;
+    var hasSector = !!(layout.wedges[0] && layout.wedges[0].sector);
+    var blocks = [];
+
+    if (mode === "flat") {
+      var fk = legendColumns(hasSector, true);
+      var frows = layout.blips.map(function (b) {
+        return legendRow(b, hasSector, true, target);
+      }).join("");
+
+      blocks.push('<div class="tr-block" style="' + S.block + '"><table class="tr-table" style="' + S.table + '">' +
+        tabelleCaption("Alle Trends im Überblick") +
+        colgroup(fk) + "<thead>" + headRow(fk) + "</thead><tbody>" + frows + "</tbody></table></div>");
+    } else {
+      var gk = legendColumns(hasSector, false);
+      layout.bands.forEach(function (band) {
+        var members = layout.blips.filter(function (b) { return b.ring.index === band.index; });
+        if (!members.length) return;
+        var rows = members.map(function (b) {
+          return legendRow(b, hasSector, false, target);
+        }).join("");
+
+        blocks.push(
+          '<section class="tr-ringblock" data-ring="' + esc(band.ring.id) + '"' +
+            ' aria-labelledby="tr-ringname-' + band.index + '" style="' + S.block + '">' +
+            '<div class="tr-ringhead" style="' + S.ringHead + '">' + chip("", band.ring) +
+            
+
+
+
+
+            '<h2 class="tr-ringname" id="tr-ringname-' + band.index + '" style="font-family:' + fontVar(layout.theme, true) +
+            ';font-weight:700;font-size:1em;margin:0">' + esc(band.ring.name) + "</h2>" +
+            '<span class="tr-count" style="' + S.muted + ';font-size:0.85em">' + members.length + " Trends</span>" +
+            (band.ring.description
+              ? '<span class="tr-ringdesc" style="' + S.muted + ';flex:1 1 22ch;min-width:0">' + esc(band.ring.description) + "</span>"
+              : "") +
+            "</div>" +
+            '<table class="tr-table" style="' + S.table + '">' +
+            tabelleCaption("Trends im Ring " + band.ring.name) + colgroup(gk) +
+            "<thead>" + headRow(gk) + "</thead><tbody>" + rows + "</tbody></table>" +
+          "</section>"
+        );
+      });
+    }
+
+    return '<div class="tr-legend" style="' + S.legend + '">' + blocks.join("") + "</div>";
+  }
+
+
+  
+
+  function renderHeadHTML(layout) {
+    var bits = [];
+    bits.push('<h1 class="tr-title" style="' + headTitleCss(layout.theme) + '">' + esc(layout.meta.title) + "</h1>");
+    var meta = [];
+    if (layout.meta.date) meta.push(esc(layout.meta.date));
+    meta.push(layout.blips.length + " Trends");
+    meta.push(layout.bands.length + " Ringe");
+    if (layout.wedges.length && layout.wedges[0].sector) meta.push(layout.wedges.length + " Sektoren");
+    if (layout.meta.subtitle) {
+      bits.push('<span class="tr-sub" style="' + S.headMeta + ';flex:1 1 100%">' + esc(layout.meta.subtitle) + "</span>");
+    }
+    return bits.join("");
+  }
+
+
+  
+
+  function renderErrorHTML(errors, warnings) {
+    var html = '<div class="tr-error" style="' + S.errBox + '">';
+    html += '<h2 style="margin:0 0 8px;font-size:1.1em">Trendradar kann nicht dargestellt werden</h2><ul style="margin:0 0 12px;padding-left:20px">';
+    errors.forEach(function (e) { html += "<li>" + esc(e) + "</li>"; });
+    html += "</ul>";
+    if (warnings && warnings.length) {
+      html += '<p style="margin:0 0 6px;font-weight:700">Hinweise</p><ul style="margin:0;padding-left:20px;color:var(--tr-muted,#495057)">';
+      warnings.forEach(function (w) { html += "<li>" + esc(w) + "</li>"; });
+    }
+    html += "</div>";
+    return html;
+  }
+
+  
+
+  function cssVars(theme) {
+    return {
+      "--tr-bg": theme.background,
+      "--tr-ink": theme.ink,
+      "--tr-muted": theme.muted,
+      "--tr-grid": theme.grid,
+      "--tr-sector-line": theme.sectorLine,
+      "--tr-border": theme.border,
+      "--tr-control": theme.control,
+      "--tr-accent": theme.accent,
+      "--tr-row-hover": theme.rowHover,
+      
+
+
+      "--tr-font": theme.font,
+      "--tr-head-font": theme.headFont,
+      "--tr-font-size": theme.fontSize + "px",
+      "--tr-blip-stroke": theme.blipStroke,
+      "--tr-blip-stroke-width": theme.blipStrokeWidth + "px"
+    };
+  }
+
+  
+
+
+  function themeVarText(theme) {
+    var v = cssVars(theme), out = "";
+    Object.keys(v).forEach(function (k) { out += k + ":" + v[k] + ";"; });
+    return out;
+  }
+
+  function mount(root, rawData) {
+    if (!root) return null;
+    var doc = root.ownerDocument || (typeof document !== "undefined" ? document : null);
+    var win = doc && doc.defaultView ? doc.defaultView : (typeof window !== "undefined" ? window : null);
+    var norm = validate(rawData);
+    norm.warnings.forEach(function (w) { if (typeof console !== "undefined") console.warn("[Trendradar] " + w); });
+
+    if (norm.errors.length) {
+      var box = doc.createElement("div");
+      box.innerHTML = renderErrorHTML(norm.errors, norm.warnings);
+      while (root.firstChild) root.removeChild(root.firstChild);
+      root.appendChild(box.firstChild);
+      return null;
+    }
+
+    var layout = computeLayout(norm);
+
+    
+
+
+    if (doc && doc.body && layout.theme && layout.theme.background) {
+      doc.body.style.background = layout.theme.background;
+    }
+
+    if (layout.overflow && typeof console !== "undefined") {
+      console.warn("[Trendradar] " + layout.warnings[layout.warnings.length - 1]);
+    }
+
+    var head = root.querySelector(".tr-head");
+    var stage = root.querySelector(".tr-stage");
+    var legendWrap = root.querySelector(".tr-legend-wrap");
+    var toolbar = root.querySelector(".tr-toolbar");
+    var legendBox = root.querySelector(".tr-legend");
+
+    
+
+
+    if (head) head.style.cssText = S.head;
+    if (stage) stage.style.cssText = S.stage;
+    if (toolbar) toolbar.style.cssText = S.toolbar;
+    if (legendBox) legendBox.style.cssText = S.legend;
+
+    head.innerHTML = renderHeadHTML(layout);
+    stage.innerHTML = renderSVG(layout);
+
+    var mode = norm.layout.legend.mode;
+
+    function paintLegend() {
+      legendBox.innerHTML = renderLegendHTML(layout, mode);
+      if (toolbar) {
+        Array.prototype.forEach.call(toolbar.querySelectorAll(".tr-btn"), function (btn) {
+          btn.setAttribute("aria-pressed", btn.getAttribute("data-mode") === mode ? "true" : "false");
+        });
+      }
+      wireHighlight();
+    }
+
+    
+    function wireHighlight() {
+      var map = {};
+      Array.prototype.forEach.call(stage.querySelectorAll(".tr-blip"), function (g) {
+        map[g.getAttribute("data-nr")] = g;
+      });
+      Array.prototype.forEach.call(legendBox.querySelectorAll(".tr-row"), function (row) {
+        function on() { var g = map[row.getAttribute("data-nr")]; if (g) g.classList.add("is-hl"); }
+        function off() { var g = map[row.getAttribute("data-nr")]; if (g) g.classList.remove("is-hl"); }
+        row.addEventListener("mouseenter", on);
+        row.addEventListener("mouseleave", off);
+      });
+    }
+
+    
+    if (toolbar) {
+      toolbar.style.cssText = S.toolbar;
+      toolbar.innerHTML = '<span style="' + S.muted + ';font-size:0.85em;margin-right:auto">Legende</span>' +
+        '<button type="button" class="tr-btn" data-mode="grouped">Gruppiert</button>' +
+        '<button type="button" class="tr-btn" data-mode="flat">Flach</button>';
+      toolbar.addEventListener("click", function (ev) {
+        var btn = ev.target.closest ? ev.target.closest(".tr-btn") : null;
+        if (!btn) return;
+        mode = btn.getAttribute("data-mode") === "flat" ? "flat" : "grouped";
+        paintLegend();
+      });
+    }
+
+    
+
+
+
+
+
+    paintLegend();
+
+    
+
+
+    root.style.cssText = S.root + "border-radius:" + norm.theme.radius + "px";
+    if (legendWrap) legendWrap.style.cssText = S.wrap;
+
+    
+
+    var vars = cssVars(norm.theme);
+    Object.keys(vars).forEach(function (k) { root.style.setProperty(k, vars[k]); });
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    var ZIEL_LABEL = 13, ZIEL_NR = 11.4, ZIEL_BLIP = 15, MIN_LABEL = 9;
+
+    
+    function blipBoxes() {
+      var out = [];
+      Array.prototype.forEach.call(stage.querySelectorAll(".tr-blip circle"), function (c) {
+        var b = c.getBoundingClientRect();
+        out.push({ l: b.left, t: b.top, r: b.right, b: b.bottom });
+      });
+      return out;
+    }
+
+    function labelFits(t, boxes) {
+      var b = t.getBoundingClientRect();
+      var m = 3;
+      for (var i = 0; i < boxes.length; i++) {
+        var x = boxes[i];
+        if (b.left < x.r + m && b.right > x.l - m &&
+            b.top < x.b + m && b.bottom > x.t - m) return false;
+      }
+      return true;
+    }
+
+    
+
+
+
+
+
+
+
+
+
+    function viewBoxFuerLabels(svg) {
+      var vb = svg.viewBox.baseVal;
+      if (!vb || !vb.width) return false;
+      var mitteX = vb.x + vb.width / 2, mitteY = vb.y + vb.height / 2;
+      var nX = vb.width / 2, nY = vb.height / 2, zuKlein = false;
+      Array.prototype.forEach.call(svg.querySelectorAll("text.tr-sector-label"), function (t) {
+        if (t.style.display === "none") return;
+        var bb = null;
+        try { bb = t.getBBox(); } catch (e) { return; }
+        if (!bb || !bb.width) return;
+        var l = mitteX - bb.x, r = bb.x + bb.width - mitteX;
+        var o = mitteY - bb.y, u = bb.y + bb.height - mitteY;
+        if (l > nX || r > nX || o > nY || u > nY) zuKlein = true;
+        nX = Math.max(nX, l, r);
+        nY = Math.max(nY, o, u);
+      });
+      if (!zuKlein) return false;
+      
+
+      nX += 6; nY += 6;
+      svg.setAttribute("viewBox",
+        (mitteX - nX).toFixed(2) + " " + (mitteY - nY).toFixed(2) + " " +
+        (nX * 2).toFixed(2) + " " + (nY * 2).toFixed(2));
+      return true;
+    }
+
+    function fitText() {
+      var svg = stage.querySelector("svg");
+      if (!svg || typeof svg.getScreenCTM !== "function") return;
+      var m = svg.getScreenCTM();
+      var k = m && m.a ? 1 / m.a : 1;
+      if (!isFinite(k) || k <= 0) return;
+      if (Math.abs(k - (fitText.last || 0)) < 0.02) return;
+      fitText.last = k;
+
+      
+
+
+
+
+
+      var dUser = layout.size.blip;
+      var istPx = dUser / k;
+      var maxF = layout.minDist > 0 ? layout.minDist / dUser : 1;
+      var f = Math.min(maxF, Math.max(1, ZIEL_BLIP / istPx));
+      if (!isFinite(f) || f <= 0) f = 1;
+
+      if (Math.abs(f - (fitText.lastF || 0)) > 0.01) {
+        fitText.lastF = f;
+        Array.prototype.forEach.call(stage.querySelectorAll(".tr-blip circle"), function (c) {
+          if (!c.getAttribute("data-r")) c.setAttribute("data-r", c.getAttribute("r"));
+          c.setAttribute("r", (parseFloat(c.getAttribute("data-r")) * f).toFixed(2));
+        });
+        
+
+        Array.prototype.forEach.call(stage.querySelectorAll(".tr-sectorline"), function (l) {
+          if (!l.getAttribute("data-x1")) {
+            l.setAttribute("data-x1", l.getAttribute("x1"));
+            l.setAttribute("data-y1", l.getAttribute("y1"));
+          }
+          l.setAttribute("x1", (parseFloat(l.getAttribute("data-x1")) * f).toFixed(2));
+          l.setAttribute("y1", (parseFloat(l.getAttribute("data-y1")) * f).toFixed(2));
+        });
+      }
+
+      
+
+
+
+      var innenPx = Math.max(0, (dUser * f) / k - 4);
+      var nrPx = Math.min(ZIEL_NR, innenPx / 0.6);
+      Array.prototype.forEach.call(stage.querySelectorAll(".tr-blip-nr"), function (t) {
+        t.style.fontSize = (nrPx * k).toFixed(2) + "px";
+      });
+
+      
+
+
+
+
+      var boxes = blipBoxes();
+      Array.prototype.forEach.call(stage.querySelectorAll(".tr-sector-label"), function (t) {
+        t.style.display = "";
+        var px = ZIEL_LABEL;
+        t.style.fontSize = (px * k).toFixed(2) + "px";
+        while (px > MIN_LABEL && !labelFits(t, boxes)) {
+          px = Math.max(MIN_LABEL, px - 0.5);
+          t.style.fontSize = (px * k).toFixed(2) + "px";
+        }
+        if (!labelFits(t, boxes)) t.style.display = "none";
+      });
+
+      
+
+
+
+      root.style.setProperty("--tr-blip-stroke-width", (1.5 * k).toFixed(2) + "px");
+      root.style.setProperty("--tr-blip-stroke-hover", (3.5 * k).toFixed(2) + "px");
+
+      
+
+
+
+
+      if (viewBoxFuerLabels(svg)) {
+        fitText.durchlaeufe = (fitText.durchlaeufe || 0) + 1;
+        if (fitText.durchlaeufe < 3) {
+          fitText.last = 0;
+          fitText.lastF = 0;
+          return fitText();
+        }
+      }
+      fitText.durchlaeufe = 0;
+    }
+
+    fitText();
+    if (win && typeof win.ResizeObserver === "function" && stage) {
+      
+
+      var ro = new win.ResizeObserver(fitText);
+      ro.observe(stage);
+    }
+    if (win && win.addEventListener) {
+      
+
+
+      win.addEventListener("resize", fitText);
+    }
+
+    return layout;
+  }
+
+  function readEmbeddedData(doc) {
+    var el = doc.getElementById("trendradar-data");
+    if (!el) return null;
+    try {
+      return JSON.parse(el.textContent || el.innerText || "{}");
+    } catch (err) {
+      if (typeof console !== "undefined") console.error("[Trendradar] JSON-Block ist ungültig: " + err.message);
+      return { __parseError: err.message };
+    }
+  }
+
+  function autoInit(doc) {
+    doc = doc || (typeof document !== "undefined" ? document : null);
+    if (!doc) return null;
+    var root = doc.querySelector(".tr-root");
+    if (!root) return null;
+    var data = readEmbeddedData(doc);
+    if (data && data.__parseError) {
+      root.innerHTML = renderErrorHTML(["Der JSON-Block \"trendradar-data\" ist nicht gültiges JSON: " + data.__parseError], []);
+      return null;
+    }
+    return mount(root, data);
+  }
+
+  if (typeof document !== "undefined") {
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { autoInit(); });
+    else autoInit();
+  }
+
+  return {
+    TAU: TAU,
+    STYLE: S,
+    validate: validate,
+    computeLayout: computeLayout,
+    renderSVG: renderSVG,
+    renderLegendHTML: renderLegendHTML,
+    renderHeadHTML: renderHeadHTML,
+    renderErrorHTML: renderErrorHTML,
+    cssVars: cssVars,
+    themeVarText: themeVarText,
+    mount: mount,
+    autoInit: autoInit,
+    readEmbeddedData: readEmbeddedData
+  };
+})();
+
+if (typeof globalThis !== "undefined") globalThis.TrendRadar = TrendRadar;
+if (typeof module !== "undefined" && module.exports) module.exports = TrendRadar;
+</script>
+</body>
+</html>
