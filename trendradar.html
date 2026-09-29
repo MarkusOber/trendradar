@@ -127,6 +127,24 @@
      Inline-Style als var(--tr-blip-stroke-width, ⬦) referenziert wird.
      Deshalb braucht es hier kein !important. */
   tr.tr-row:hover { background: var(--tr-row-hover, #f6f6f6); }
+  tr.tr-row { position: relative; }
+  tr.tr-row.is-link { cursor: pointer; }
+  /* Die ganze Zeile ist das Klickziel, aber der echte <a> bleibt im
+     Trendnamen: nur seine ::after-Flaeche wird ueber die Zeile gespannt.
+     So bleiben Tastaturbedienung, "Link in neuem Tab oeffnen" und
+     Screenreader-Semantik erhalten, statt die Zeile umzubauen.
+     Bewusst im <style>-Block und damit nur in der interaktiven Variante:
+     eine Pseudo-Element-Regel laesst sich nicht inline setzen, und die
+     statische Ausgabe kommt ohne <style> aus. Dort bleibt der Link auf
+     den Trendnamen beschraenkt - so wie dort auch kein Hover und keine
+     Tastaturhervorhebung stattfinden. */
+  tr.tr-row.is-link a.tr-link::after { content: ""; position: absolute; inset: 0; }
+  tr.tr-row.is-link:focus-within {
+    background: var(--tr-row-hover, #f6f6f6);
+    outline: 2px solid var(--tr-ink, #111);
+    outline-offset: -2px;
+  }
+  tr.tr-row.is-link a.tr-link:focus-visible { outline: none; }
   .tr-blip { cursor: default; }
   .tr-blip-link { cursor: pointer; }
   .tr-blip:hover { --tr-blip-stroke-width: 3.5px; }
@@ -146,7 +164,6 @@
   @media (max-width: 560px) {
     .tr-col-name   { width: 21% !important; }
     .tr-col-sector { width: 76px !important; }
-    .tr-col-link   { width: 18% !important; }
     .tr-col-desc   { width: auto !important; }
   }
 
@@ -354,7 +371,11 @@ const TrendRadar = (function () {
         "color:var(--tr-muted,#6b7280);padding:5px 10px 5px 0;border-bottom:1px solid var(--tr-border,#e8e8e8)",
     td: "vertical-align:top;padding:6px 10px 6px 0;border-top:1px solid var(--tr-border,#e8e8e8);line-height:1.45;overflow-wrap:anywhere",
     tdNum: "vertical-align:top;padding:6px 10px 6px 0;border-top:1px solid var(--tr-border,#e8e8e8);line-height:1.45;width:42px",
-    clip: "max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+    /* Ohne die Link-Spalte ist die Beschreibung breit genug, dass fast
+       jeder Text vollstaendig ueber zwei bis drei Zeilen steht. Gekappt
+       wird nur, was darueber hinausgeht - der Rest steht im Tooltip der
+       Zeile. */
+    clamp: "display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden",
     muted: "color:var(--tr-muted,#6b7280)",
     errBox: "margin:40px auto;max-width:64ch;padding:20px 24px;border:1px solid var(--tr-border,#e8e8e8);border-radius:10px;line-height:1.6"
   };
@@ -957,29 +978,28 @@ const TrendRadar = (function () {
     return e.target || def;
   }
 
+  /* Ein Tooltip fuer die ganze Zeile. Die gespannte ::after-Flaeche des
+     Ankers liegt ueber allen Zellen und verdeckt deren Tooltips, also
+     sammelt die Zeile hier, was vorher an zwei Stellen stand: die
+     vollstaendige Beschreibung und das Ziel. */
+  function rowTitle(e) {
+    var parts = [];
+    if (e.description) parts.push(e.description);
+    if (e.url) parts.push(e.url);
+    return parts.join("\n");
+  }
+
   function nameCell(e, def) {
     if (!e.url) return esc(e.name);
     var t = linkTarget(e, def);
-    return '<a class="tr-link" href="' + esc(e.url) + '"' +
+    return '<a class="tr-link" href="' + esc(e.url) + '" title="' + esc(rowTitle(e)) + '"' +
       (t ? ' target="' + t + '" rel="noopener noreferrer"' : "") + ">" + esc(e.name) + "</a>";
   }
 
   function descCell(e) {
     if (!e.description) return '<td style="' + S.td + S.muted + '">\u2013</td>';
-    return '<td style="' + S.td + S.muted + '"><div style="' + S.clip + '" title="' + esc(e.description) + '">' +
+    return '<td style="' + S.td + S.muted + '"><div style="' + S.clamp + '">' +
       esc(e.description) + "</div></td>";
-  }
-
-  function linkCell(e, def) {
-    if (!e.url) return '<td style="' + S.td + S.muted + '">\u2013</td>';
-    var t = linkTarget(e, def);
-    var short = e.url.replace(/^https?:\/\//, "").replace(/#.*$/, " \u2026").replace(/\/$/, "");
-    /* Wie die Beschreibung gekappt: eine URL hat keine Leerzeichen und
-       wuerde sonst die Zeilenhoehe sprengen. Der volle Text steht als
-       Tooltip daneben. */
-    return '<td style="' + S.td + '"><div style="' + S.clip + '" title="' + esc(e.url) + '">' +
-      '<a class="tr-link" href="' + esc(e.url) + '"' +
-      (t ? ' target="' + t + '" rel="noopener noreferrer"' : "") + ">" + esc(short) + "</a></div></td>";
   }
 
   /* ── 5. Legende ────────────────────────────────────────────────── */
@@ -987,18 +1007,15 @@ const TrendRadar = (function () {
   /* Spalten und ihre Breiten stehen genau einmal hier. Kopfzeile und
      <colgroup> werden beide aus dieser Liste gebaut, damit sie nicht
      auseinanderlaufen koennen. "desc" bezieht den Rest.
-     Die Beschreibungsspalte ist die einzige, die schrumpfen darf: ihr
-     Text wird ohnehin gekappt und steht im Tooltip. Die uebrigen
-     Spalten bekommen feste Mindestbreiten, weil ihre Inhalte kurze
-     Woerter sind, die nicht umbrechen duerfen - sonst wuerde
-     "Technologie" in der Sektorspalte in die Nachbarspalte laufen. */
+     Eine eigene Linkspalte gibt es nicht mehr: die ganze Zeile ist der
+     Anker, das Ziel steht im Tooltip. Damit gehoert der Platz der
+     Beschreibung. */
   var COLS = {
     num:    { w: "42px", head: "Nr" },
-    name:   { w: "26%",  head: "Trend" },
+    name:   { w: "30%",  head: "Trend" },
     ring:   { w: "58px", head: "Ring" },
     sector: { w: "18%",  head: "Sektor" },
-    desc:   { w: "auto", head: "Beschreibung" },
-    link:   { w: "20%",  head: "Link" }
+    desc:   { w: "auto", head: "Beschreibung" }
   };
 
   function colgroup(keys) {
@@ -1016,56 +1033,50 @@ const TrendRadar = (function () {
     }).join("") + "</tr>";
   }
 
-  /* Die Spalten gelten fuer alle Tabellen der jeweiligen Ansicht. Eine
-     eigene Link-Spalte gibt es, sobald irgendein Trend eine URL hat -
-     auch dann, wenn ein Ring selbst keine einzige traegt. Sonst haette
-     diese Tabelle eine Spalte weniger als ihre Nachbarn. */
-  function legendColumns(hasSector, anyUrl, withRing) {
+  /* Die Spalten gelten fuer alle Tabellen der jeweiligen Ansicht, damit
+     jede Ringgruppe gleich breit aufgebaut ist. */
+  function legendColumns(hasSector, withRing) {
     return ["num", "name"]
       .concat(withRing ? ["ring"] : [])
       .concat(hasSector ? ["sector"] : [])
-      .concat(["desc"])
-      .concat(anyUrl ? ["link"] : []);
+      .concat(["desc"]);
+  }
+
+  /* Eine Tabellenzeile. Zeilen ohne Ziel bleiben stumm: kein Pointer, kein
+     Anker, kein Tooltip. */
+  function legendRow(b, hasSector, withRing, target) {
+    var e = b.entry;
+    return '<tr class="tr-row' + (e.url ? " is-link" : "") + '" data-nr="' + e.number + '">' +
+      '<td style="' + S.tdNum + '">' + nrBadge(b.ring, e.number) + "</td>" +
+      '<td style="' + S.td + '">' + nameCell(e, target) + "</td>" +
+      (withRing ? '<td style="' + S.td + '">' + chip("", b.ring) + " " + esc(b.ring.name) + "</td>" : "") +
+      (hasSector
+        ? '<td style="' + S.td + '">' +
+          (e.sector ? esc(e.sector.name) : '<span style="' + S.muted + '">\u2013</span>') + "</td>"
+        : "") +
+      descCell(e) + "</tr>";
   }
 
   function renderLegendHTML(layout, mode) {
     var target = layout.links.target;
     var hasSector = !!(layout.wedges[0] && layout.wedges[0].sector);
-    var anyUrl = layout.blips.some(function (b) { return !!b.entry.url; });
     var blocks = [];
 
     if (mode === "flat") {
-      var fk = legendColumns(hasSector, anyUrl, true);
-      var rows = layout.blips.map(function (b) {
-        var e = b.entry;
-        return '<tr class="tr-row" data-nr="' + e.number + '">' +
-          '<td style="' + S.tdNum + '">' + nrBadge(b.ring, e.number) + "</td>" +
-          '<td style="' + S.td + '">' + nameCell(e, target) + "</td>" +
-          '<td style="' + S.td + '">' + chip("", b.ring) + " " + esc(b.ring.name) + "</td>" +
-          (hasSector
-            ? '<td style="' + S.td + '">' +
-              (e.sector ? esc(e.sector.name) : '<span style="' + S.muted + '">\u2013</span>') + "</td>"
-            : "") +
-          descCell(e) + linkCell(e, target) + "</tr>";
+      var fk = legendColumns(hasSector, true);
+      var frows = layout.blips.map(function (b) {
+        return legendRow(b, hasSector, true, target);
       }).join("");
 
       blocks.push('<div class="tr-block" style="' + S.block + '"><table class="tr-table" style="' + S.table + '">' +
-        colgroup(fk) + "<thead>" + headRow(fk) + "</thead><tbody>" + rows + "</tbody></table></div>");
+        colgroup(fk) + "<thead>" + headRow(fk) + "</thead><tbody>" + frows + "</tbody></table></div>");
     } else {
-      var gk = legendColumns(hasSector, anyUrl, false);
+      var gk = legendColumns(hasSector, false);
       layout.bands.forEach(function (band) {
         var members = layout.blips.filter(function (b) { return b.ring.index === band.index; });
         if (!members.length) return;
         var rows = members.map(function (b) {
-          var e = b.entry;
-          return '<tr class="tr-row" data-nr="' + e.number + '">' +
-            '<td style="' + S.tdNum + '">' + nrBadge(b.ring, e.number) + "</td>" +
-            '<td style="' + S.td + '">' + nameCell(e, target) + "</td>" +
-            (hasSector
-              ? '<td style="' + S.td + '">' +
-                (e.sector ? esc(e.sector.name) : '<span style="' + S.muted + '">\u2013</span>') + "</td>"
-              : "") +
-            descCell(e) + linkCell(e, target) + "</tr>";
+          return legendRow(b, hasSector, false, target);
         }).join("");
 
         blocks.push(
