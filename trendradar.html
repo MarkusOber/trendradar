@@ -137,6 +137,19 @@
   .tr-link { text-decoration: underline; text-underline-offset: 2px; }
   .tr-link:hover { text-decoration-thickness: 2px; }
 
+  /* Schmale Rahmen: die Beschreibungsspalte darf nicht auf einen nutzlosen
+     Rest zusammenschrumpfen, weil sie als einzige keinen festen Anteil
+     bekommt. Also bekommen die Spalten mit kurzen Beschriftungen eine
+     Mindestbreite in Pixeln; den Rest nimmt die Beschreibung.
+     !important schlaegt hier die Inline-Breite am <col>, die fuer die
+     statische Variante ohne <style> noetig bleibt. */
+  @media (max-width: 560px) {
+    .tr-col-name   { width: 21% !important; }
+    .tr-col-sector { width: 76px !important; }
+    .tr-col-link   { width: 18% !important; }
+    .tr-col-desc   { width: auto !important; }
+  }
+
   /* Druck.
 
      !important ist hier keine Faelle von Unsauberkeit, sondern Notwendigkeit:
@@ -331,12 +344,17 @@ const TrendRadar = (function () {
     legend: "display:flex;flex-direction:column;gap:16px",
     block: "display:block",
     ringHead: "display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:0 0 8px",
-    table: "width:100%;border-collapse:collapse;table-layout:auto",
+    /* table-layout:fixed ist hier der entscheidende Punkt. Mit "auto"
+       rechnet jedes <table> die Spaltenbreiten aus seinem eigenen Inhalt
+       aus, und die bis zu sechs Ringbloecke stuenden dann gegeneinander
+       versetzt. "fixed" nimmt die Breiten aus <colgroup> und macht alle
+       Tabellen untereinander deckungsgleich. */
+    table: "width:100%;border-collapse:collapse;table-layout:fixed",
     th: "text-align:left;font-size:0.85em;font-weight:600;letter-spacing:0.03em;text-transform:uppercase;" +
-        "color:var(--tr-muted,#6b7280);padding:5px 10px 5px 0;border-bottom:1px solid var(--tr-border,#e8e8e8);white-space:nowrap",
-    td: "vertical-align:top;padding:6px 10px 6px 0;border-top:1px solid var(--tr-border,#e8e8e8);line-height:1.45",
-    tdNum: "vertical-align:top;padding:6px 10px 6px 0;border-top:1px solid var(--tr-border,#e8e8e8);line-height:1.45;width:1%",
-    clip: "max-width:38ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
+        "color:var(--tr-muted,#6b7280);padding:5px 10px 5px 0;border-bottom:1px solid var(--tr-border,#e8e8e8)",
+    td: "vertical-align:top;padding:6px 10px 6px 0;border-top:1px solid var(--tr-border,#e8e8e8);line-height:1.45;overflow-wrap:anywhere",
+    tdNum: "vertical-align:top;padding:6px 10px 6px 0;border-top:1px solid var(--tr-border,#e8e8e8);line-height:1.45;width:42px",
+    clip: "max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
     muted: "color:var(--tr-muted,#6b7280)",
     errBox: "margin:40px auto;max-width:64ch;padding:20px 24px;border:1px solid var(--tr-border,#e8e8e8);border-radius:10px;line-height:1.6"
   };
@@ -956,11 +974,59 @@ const TrendRadar = (function () {
     if (!e.url) return '<td style="' + S.td + S.muted + '">\u2013</td>';
     var t = linkTarget(e, def);
     var short = e.url.replace(/^https?:\/\//, "").replace(/#.*$/, " \u2026").replace(/\/$/, "");
-    return '<td style="' + S.td + '"><a class="tr-link" href="' + esc(e.url) + '"' +
-      (t ? ' target="' + t + '" rel="noopener noreferrer"' : "") + ">" + esc(short) + "</a></td>";
+    /* Wie die Beschreibung gekappt: eine URL hat keine Leerzeichen und
+       wuerde sonst die Zeilenhoehe sprengen. Der volle Text steht als
+       Tooltip daneben. */
+    return '<td style="' + S.td + '"><div style="' + S.clip + '" title="' + esc(e.url) + '">' +
+      '<a class="tr-link" href="' + esc(e.url) + '"' +
+      (t ? ' target="' + t + '" rel="noopener noreferrer"' : "") + ">" + esc(short) + "</a></div></td>";
   }
 
   /* ── 5. Legende ────────────────────────────────────────────────── */
+
+  /* Spalten und ihre Breiten stehen genau einmal hier. Kopfzeile und
+     <colgroup> werden beide aus dieser Liste gebaut, damit sie nicht
+     auseinanderlaufen koennen. "desc" bezieht den Rest.
+     Die Beschreibungsspalte ist die einzige, die schrumpfen darf: ihr
+     Text wird ohnehin gekappt und steht im Tooltip. Die uebrigen
+     Spalten bekommen feste Mindestbreiten, weil ihre Inhalte kurze
+     Woerter sind, die nicht umbrechen duerfen - sonst wuerde
+     "Technologie" in der Sektorspalte in die Nachbarspalte laufen. */
+  var COLS = {
+    num:    { w: "42px", head: "Nr" },
+    name:   { w: "26%",  head: "Trend" },
+    ring:   { w: "58px", head: "Ring" },
+    sector: { w: "18%",  head: "Sektor" },
+    desc:   { w: "auto", head: "Beschreibung" },
+    link:   { w: "20%",  head: "Link" }
+  };
+
+  function colgroup(keys) {
+    return "<colgroup>" + keys.map(function (k) {
+      /* Die Klasse erlaubt dem Style-Block, die Breite auf schmalen
+         Rahmen ueber !important zu ueberschreiben; die Inline-Breite
+         bleibt der Normalfall und funktioniert auch ohne <style>. */
+      return '<col class="tr-col-' + k + '" style="width:' + COLS[k].w + '">';
+    }).join("") + "</colgroup>";
+  }
+
+  function headRow(keys) {
+    return "<tr>" + keys.map(function (k) {
+      return '<th style="' + S.th + '">' + COLS[k].head + "</th>";
+    }).join("") + "</tr>";
+  }
+
+  /* Die Spalten gelten fuer alle Tabellen der jeweiligen Ansicht. Eine
+     eigene Link-Spalte gibt es, sobald irgendein Trend eine URL hat -
+     auch dann, wenn ein Ring selbst keine einzige traegt. Sonst haette
+     diese Tabelle eine Spalte weniger als ihre Nachbarn. */
+  function legendColumns(hasSector, anyUrl, withRing) {
+    return ["num", "name"]
+      .concat(withRing ? ["ring"] : [])
+      .concat(hasSector ? ["sector"] : [])
+      .concat(["desc"])
+      .concat(anyUrl ? ["link"] : []);
+  }
 
   function renderLegendHTML(layout, mode) {
     var target = layout.links.target;
@@ -969,45 +1035,37 @@ const TrendRadar = (function () {
     var blocks = [];
 
     if (mode === "flat") {
-      var head = '<tr><th style="' + S.th + '">Nr</th><th style="' + S.th + '">Trend</th><th style="' + S.th + '">Ring</th>' +
-        (hasSector ? '<th style="' + S.th + '">Sektor</th>' : "") +
-        '<th style="' + S.th + '">Beschreibung</th>' + (anyUrl ? '<th style="' + S.th + '">Link</th>' : "") + "</tr>";
-
+      var fk = legendColumns(hasSector, anyUrl, true);
       var rows = layout.blips.map(function (b) {
         var e = b.entry;
         return '<tr class="tr-row" data-nr="' + e.number + '">' +
           '<td style="' + S.tdNum + '">' + nrBadge(b.ring, e.number) + "</td>" +
           '<td style="' + S.td + '">' + nameCell(e, target) + "</td>" +
-          '<td style="' + S.td + ';white-space:nowrap">' + chip("", b.ring) + " " + esc(b.ring.name) + "</td>" +
+          '<td style="' + S.td + '">' + chip("", b.ring) + " " + esc(b.ring.name) + "</td>" +
           (hasSector
-            ? '<td style="' + S.td + ';white-space:nowrap">' +
+            ? '<td style="' + S.td + '">' +
               (e.sector ? esc(e.sector.name) : '<span style="' + S.muted + '">\u2013</span>') + "</td>"
             : "") +
           descCell(e) + linkCell(e, target) + "</tr>";
       }).join("");
 
       blocks.push('<div class="tr-block" style="' + S.block + '"><table class="tr-table" style="' + S.table + '">' +
-        "<thead>" + head + "</thead><tbody>" + rows + "</tbody></table></div>");
+        colgroup(fk) + "<thead>" + headRow(fk) + "</thead><tbody>" + rows + "</tbody></table></div>");
     } else {
+      var gk = legendColumns(hasSector, anyUrl, false);
       layout.bands.forEach(function (band) {
         var members = layout.blips.filter(function (b) { return b.ring.index === band.index; });
         if (!members.length) return;
-        var hasLinks = members.some(function (b) { return !!b.entry.url; });
-        var head = '<tr><th style="' + S.th + '">Nr</th><th style="' + S.th + '">Trend</th>' +
-          (hasSector ? '<th style="' + S.th + '">Sektor</th>' : "") +
-          '<th style="' + S.th + '">Beschreibung</th>' +
-          (hasLinks ? '<th style="' + S.th + '">Link</th>' : "") + "</tr>";
-
         var rows = members.map(function (b) {
           var e = b.entry;
           return '<tr class="tr-row" data-nr="' + e.number + '">' +
             '<td style="' + S.tdNum + '">' + nrBadge(b.ring, e.number) + "</td>" +
             '<td style="' + S.td + '">' + nameCell(e, target) + "</td>" +
             (hasSector
-              ? '<td style="' + S.td + ';white-space:nowrap">' +
+              ? '<td style="' + S.td + '">' +
                 (e.sector ? esc(e.sector.name) : '<span style="' + S.muted + '">\u2013</span>') + "</td>"
               : "") +
-            descCell(e) + (hasLinks ? linkCell(e, target) : "") + "</tr>";
+            descCell(e) + linkCell(e, target) + "</tr>";
         }).join("");
 
         blocks.push(
@@ -1019,7 +1077,8 @@ const TrendRadar = (function () {
               ? '<span class="tr-ringdesc" style="color:var(--tr-muted,#6b7280);flex:1 1 22ch;min-width:0">' + esc(band.ring.description) + "</span>"
               : "") +
             "</div>" +
-            '<table class="tr-table" style="' + S.table + '"><thead>' + head + "</thead><tbody>" + rows + "</tbody></table>" +
+            '<table class="tr-table" style="' + S.table + '">' + colgroup(gk) +
+            "<thead>" + headRow(gk) + "</thead><tbody>" + rows + "</tbody></table>" +
           "</section>"
         );
       });
