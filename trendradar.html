@@ -47,11 +47,12 @@
     },
 
     "theme": {                 // jede Farbe auch als CSS-Variable überschreibbar
-      // Die Vorgabefarben sind dem Designsystem der Bundesagentur für Arbeit
-      // (DPL 3.11.1) entnommen: Navy #020E25 auf #F9FBFC, Rot #B30920 nur
+      // Die Vorgabefarben folgen einem festen, schriftlich hinterlegten
+      // Farbset: Navy #020E25 auf #F9FBFC, Rot #B30920 nur
       // für Aktionen, harte Linien in den Graustufen der Palette.
       "background": "#F9FBFC", "ink": "#020E25", "muted": "#495057",
       "grid": "#DEE2E6", "sectorLine": "#ADB5BD", "border": "#595959",
+      "control": "#8D8D8D",  // Kontur der Schalter, >= 3:1 gegen die Flaeche
       "accent": "#B30920",     // Aktionen, Fokusring, aktiver Schalter
       // Schriftstapel ohne Webfont: Roboto/Roboto Condensed sind auf vielen
       // Systemen vorhanden, sonst greift Helvetica/Arial. Bewusst kein @font-face
@@ -97,6 +98,7 @@
   ─  ─ CSS-VARIABLEN (in einer eigenen <style>-Zeile überschreibbar)
   ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─
   --tr-bg --tr-ink --tr-muted --tr-grid --tr-sector-line --tr-border
+  --tr-control
   --tr-accent --tr-row-hover --tr-font --tr-head-font --tr-font-size
   --tr-blip-stroke --tr-blip-stroke-width
 -->
@@ -121,14 +123,16 @@
   .tr-btn {
     font: inherit; font-size: 0.9em; line-height: 1.4;
     padding: 6px 16px; cursor: pointer;
-    /* Feiner Rahmen aus dem Rasterton: --tr-border traegt die kräftige
-       Tabellenlinie der Arbeitsagentur und waere fuer einen Umriss zu
-       schwer. */
-    border: 1px solid var(--tr-grid, #DEE2E6);
+    /* Der Umriss eines Schalters muss sich nach WCAG 1.4.11 mit mindestens
+       3:1 von der umgebenden Flaeche abheben. Der inaktive Schalter hat
+       absichtlich keine Fuellung, deshalb definiert allein diese Linie das
+       Bedienelement: --tr-grid (#DEE2E6) lag hier bei 1.25:1 und war damit
+       kein gueltiger Kontur. --tr-control ist der kleinste neutrale Ton,
+       der die Grenze mit Marge reisst. */
+    border: 1px solid var(--tr-control, #8D8D8D);
     background: transparent; color: inherit;
-    /* Harte, kleine Radien statt Pillen – so baut das Designsystem der
-       Arbeitsagentur seine Schalter (.ba-btn: border-radius 5px,
-       padding .375rem 1rem). */
+    /* Harte, kleine Radien statt Pillen: 5px Radius und 6px mal 16px
+       Innenabstand sind die Vorgabe fuer Schalter in dieser Oberflaeche. */
     border-radius: 5px;
     transition: box-shadow .08s;
   }
@@ -166,9 +170,21 @@
   tr.tr-row.is-link a.tr-link:focus-visible { outline: none; }
   .tr-blip { cursor: default; }
   .tr-blip-link { cursor: pointer; }
-  .tr-blip:hover { --tr-blip-stroke-width: 3.5px; }
-  .tr-blip.is-hl  { --tr-blip-stroke-width: 3.5px; }
+  /* Die Linienstaerke der Punkte wird vom Browser in Nutzereinheiten
+     nachgefuehrt, sonst schrumpft sie auf dem Handy unter ein Bildschirmpixel.
+     Auch die Hervorhebung laeuft deshalb ueber eine Variable. */
+  .tr-blip:hover { --tr-blip-stroke-width: var(--tr-blip-stroke-hover, 3.5px); }
+  .tr-blip.is-hl  { --tr-blip-stroke-width: var(--tr-blip-stroke-hover, 3.5px); }
   a.tr-blip-link:hover text { text-decoration: underline; }
+  /* Die Blip-Links sind SVG-Elemente und bekamen ohne eigene Regel den
+     Browser-Standardring, waehrend Schalter und Tabellenzeilen den gestalteten
+     roten Ring zeigen. Der Fokuspunkt war damit sichtbar, aber ohne ein
+     wiedererkennbares Merkmal - und ohne Kontrastgarantie, weil "auto" die
+     Farbe des Browsers ist. Dieselbe Hervorhebung wie beim Ueberfahren:
+     kraeftigerer Punkt plus roter Ring. */
+  a.tr-blip-link:focus-visible { outline: 3px solid var(--tr-accent, #B30920); }
+  a.tr-blip-link:focus-visible .tr-blip { --tr-blip-stroke-width: var(--tr-blip-stroke-hover, 3.5px); }
+  a.tr-blip-link:focus-visible text { text-decoration: underline; }
 
   a { color: inherit; }
   .tr-link { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
@@ -187,8 +203,7 @@
     .tr-col-desc   { width: auto !important; }
   }
 
-  /* Gestapelte Tabelle auf schmalen Rahmen - genau der Weg, den die
-     Arbeitsagentur bei table.ba-table geht: die Kopfzeile wandert aus dem
+  /* Gestapelte Tabelle auf schmalen Rahmen: die Kopfzeile wandert aus dem
      Sichtfeld, jede Zelle wird ein Paar aus Bezeichnung und Wert, und die
      Bezeichnung kommt aus dem data-label der Zelle.
      Bewusst nur im <style>-Block: ein ::before mit content:attr() laesst
@@ -199,8 +214,21 @@
       position: absolute; top: auto; left: -10000px;
       width: 1px; height: 1px; overflow: hidden;
     }
+    /* Die gestapelte Zeile ist gar keine Tabelle mehr. Solange <table> das
+       Tabellenlayout aufbaut, greifen table-layout:fixed und die Breiten aus
+       dem <colgroup> weiterhin - aber die Zellen sind inzwischen Flexboxen
+       und fallen aus dem Raster. Es blieb nur noch die Inline-Breite der
+       Nummerenspalte: alle fuenf Spalten wurden 48px breit, jeder Wert
+       brach nach einem Zeichen um und eine Zeile wurde ueber 1200px hoch.
+       Deshalb werden Tabelle, Zeilen und Zellen hier auf Block gestellt;
+       ab da gilt die Inline-Breite "48px" fuer die erste Zelle nicht mehr. */
+    .tr-table,
+    .tr-table > colgroup,
+    .tr-table > tbody,
+    .tr-table > tbody > tr { display: block; width: auto; }
     .tr-table > tbody > tr > td {
       display: flex; justify-content: flex-end;
+      width: auto !important;
       padding: 12px 12px 0; border: 0;
     }
     .tr-table > tbody > tr > td::before {
@@ -209,10 +237,23 @@
       font-family: var(--tr-font, Roboto, Helvetica Neue, Arial, sans-serif);
       font-weight: 700; text-align: left;
     }
-    /* Die Arbeitsagentur setzt hier keine Linien. Eine Haarlinie unter dem
-       letzten Wertpaar haelt den Block trotzdem zusammen, wenn eine
-       Beschreibung laenger ist als der Rest der Zeile. */
+    /* Im gestapelten Zustand bekommen die Wertpaare keine Linien. Eine
+       Haarlinie unter dem letzten Wertpaar haelt den Block trotzdem zusammen,
+       wenn eine Beschreibung laenger ist als der Rest der Zeile. */
     .tr-table > tbody > tr > td:last-child { border-bottom: 1px solid var(--tr-border, #595959); }
+  }
+
+  /* Die Sektorbeschriftungen am Radarrand passen neben den Ring nicht auf
+     das Handy - das ist keine Geschmacksfrage, sondern Arithmetik. Bei 360px
+     ist der Aussenring 304px breit, die Buehne hat 328px, und ein Label
+     "Technologie" in lesbarer Groesse ist 154px breit. Am Rand waeren nur
+     12px Luft; selbst weit innen bliebe das Label quer ueber dem Ring.
+     Die Grafik blendet sie deshalb auf schmalen Rahmen aus und gibt den
+     Raum den Punkten, deren Nummern man mit der Legende abgleicht. Die
+     Sektornamen gehen nicht verloren: sie stehen in der Spalte "Sektor"
+     jeder Tabellenzeile und im Stapelmodus als Beschriftung der Zelle. */
+  @media (max-width: 575.98px) {
+    .tr-sector-label { display: none; }
   }
 
   /* Druck.
@@ -343,14 +384,14 @@
 }
 </script>
 
-<div class="tr-root" id="tr-root">
+<main class="tr-root" id="tr-root">
   <header class="tr-head" id="tr-head"></header>
   <div class="tr-stage" id="tr-stage"></div>
   <div class="tr-legend-wrap" id="tr-legend-wrap">
     <div class="tr-toolbar" id="tr-toolbar"></div>
     <div class="tr-legend" id="tr-legend"></div>
   </div>
-</div>
+</main>
 
 <noscript>
   <div style="max-width:70ch;margin:40px auto;font:15px/1.6 system-ui,sans-serif">
@@ -372,16 +413,17 @@ const TrendRadar = (function () {
 
   var TAU = Math.PI * 2;
 
-  /* Die Vorgabefarben stammen aus dem Designsystem der Bundesagentur für
-     Arbeit (DPL 3.11.1) und sind dort als Hex belegt: #020E25 Grundtext,
+  /* Die Vorgabefarben sind als Hex festgeschrieben: #020E25 Grundtext,
      #F9FBFC Flaeche, #B30920 Aktion, #495057 Sekundaertext, #DEE2E6 und
-     #E4E5E7 feine Linien, #ADB5BD Sektorlinien, #595959 Tabellenlinien
-     (die Tabellenflaeche der Arbeitsagentur). */
+     #E4E5E7 feine Linien, #ADB5BD Sektorlinien, #595959 Tabellenlinien. */
   var RING_FALLBACK = ["#1F8904", "#0B70EB", "#FF8500", "#E50000", "#0dcaf0", "#3D4657"];
 
   var THEME_DEFAULT = {
     background: "#F9FBFC", ink: "#020E25", muted: "#495057",
     grid: "#DEE2E6", sectorLine: "#ADB5BD", border: "#595959",
+    /* Kontur von Bedienelementen, >= 3:1 gegen die Flaeche (WCAG 1.4.11).
+       Eigenes Token, damit das Raster des Radars unberuehrt bleibt. */
+    control: "#8D8D8D",
     accent: "#B30920", rowHover: "rgba(2,14,37,.05)",
     bandOpacity: 0.12, bandOpacityAlt: 0.06,
     blipStroke: "#00000026", blipStrokeWidth: 2,
@@ -436,10 +478,10 @@ const TrendRadar = (function () {
        aus, und die bis zu sechs Ringbloecke stuenden dann gegeneinander
        versetzt. "fixed" nimmt die Breiten aus <colgroup> und macht alle
        Tabellen untereinander deckungsgleich. */
-    /* Tabellenraster nach dem Muster der Arbeitsagentur (table.ba-table):
-       12px Innenabstand rundum, eine 1px-Linie unten an jeder Zelle und
-       eine 2px-Linie unter der Kopfzeile. Keine senkrechten Trenner und
-       kein Zebra - beides macht die Seite dort auch nicht. */
+    /* Tabellenraster: 12px Innenabstand rundum, eine 1px-Linie unten an
+       jeder Zelle und eine 2px-Linie unter der Kopfzeile. Keine
+       senkrechten Trenner und kein Zebra - beides wuerde die Zeilen nur
+       zerreissen. */
     table: "width:100%;border-collapse:collapse;table-layout:fixed;vertical-align:top",
     th: "text-align:left;font-size:1em;font-weight:700;color:var(--tr-ink,#020E25);" +
         "padding:12px;background:transparent;border-top:0;border-bottom:2px solid var(--tr-border,#595959)",
@@ -451,12 +493,18 @@ const TrendRadar = (function () {
     /* Die Nummerenspalte muss Badge plus 24px Innenabstand fassen. */
     tdNum: "vertical-align:top;padding:12px;color:var(--tr-ink,#020E25);background:transparent;" +
         "border-bottom:1px solid var(--tr-border,#595959);line-height:1.45;width:48px;",
-    /* Ohne die Link-Spalte ist die Beschreibung breit genug, dass fast
-       jeder Text vollstaendig ueber zwei bis drei Zeilen steht. Gekappt
-       wird nur, was darueber hinausgeht - der Rest steht im Tooltip der
-       Zeile. */
-    clamp: "display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden",
+    /* Die Beschreibung wird nicht mehr gekappt. Das Kappenschnitt hat den
+       Volltext nur in den Tooltip der Zeile verlagert: fuer WCAG 1.4.13
+       (Inhalt bei Hover oder Fokus) ist Inhalt, den es nur beim Ueberfahren
+       gibt, genau das, was nicht passieren darf, und unter den Textabstaenden
+       aus 1.4.12 schnitt die Kappe noch mehr ab. Gemessen war nur eine
+       einzige von zwoelf Zellen betroffen, die dann 22px zu kurz war. */
     muted: "color:var(--tr-muted,#495057)",
+    /* Nur fuer Screenreader sichtbarer Text: die Tabellen bekommen eine
+       Beschriftung, die fuer das Auge unsichtbar bleibt. Echte width/height
+       1px plus clip, weil display:none und visibility:hidden den Text auch
+       aus dem Accessibility-Baum nehmen wuerden. */
+    sr: "position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0",
     errBox: "margin:40px auto;max-width:64ch;padding:20px 24px;border:1px solid var(--tr-border,#595959);border-radius:5px;line-height:1.6"
   };
 
@@ -493,9 +541,9 @@ const TrendRadar = (function () {
     return "var(--tr-" + (head ? "head-" : "") + "font," + fontStack(head ? theme.headFont : theme.font, "sans-serif") + ")";
   }
 
-  /* Ueberschrift: die zweiteilige Schrift des Designsystems, feste Groesse
-     aus dem Thema. Ohne negativen Sperrung, weil eine schmale Schrift
-     dadurch enger und nicht breiter wirkt. */
+  /* Ueberschrift: die zweiteilige Schrift, feste Groesse aus dem Thema.
+     Ohne negativen Sperrung, weil eine schmale Schrift dadurch enger und
+     nicht breiter wirkt. */
   function headTitleCss(theme) {
     return "margin:0;font-family:" + fontVar(theme, true) +
       ";font-size:" + nOf(theme.headSize, 24, 10, 96) + "px;line-height:1.2;font-weight:700";
@@ -507,8 +555,15 @@ const TrendRadar = (function () {
     });
   }
 
-  /* Wählt Schwarz oder Weiß als Textfarbe auf einer Flächenfarbe. Damit die
-     Nummer im Blip auch bei hellen Ringfarben lesbar bleibt. */
+  /* Waehlt die Textfarbe auf einer Flaechenfarbe. Die Ziffer im Blip und das
+     Badge in der Legende sitzen beide auf der Ringfarbe, also muss die Wahl
+     die 4,5:1 aus WCAG 1.4.3 treffen.
+     Ausgangspunkt ist die Designvorgabe "Weiss"; sie bleibt, solange sie
+     besteht. Nur wenn Weiss durchfaellt, wechselt die Schrift auf fast
+     Schwarz. Die alte feste Schwelle L > 0,4 war geraten und liess Weiss auf
+     Orange stehen: 2,44:1. Gerechnet wird der Kontrast selbst
+     (1,05 / (L + 0,05)); 0,179 waere der Punkt, an dem beide Farben gleich
+     gut waeren. Von den vier Ringfarben faellt dadurch nur Orange durch. */
   function inkOn(hex) {
     var m = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.exec(String(hex).trim());
     if (!m) return "#111111";
@@ -519,7 +574,7 @@ const TrendRadar = (function () {
       return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
     }
     var L = 0.2126 * ch(0) + 0.7152 * ch(2) + 0.0722 * ch(4);
-    return L > 0.4 ? "#111111" : "#ffffff";
+    return 1.05 / (L + 0.05) >= 4.5 ? "#ffffff" : "#111111";
   }
 
   function mergeDeep(base, over) {
@@ -950,6 +1005,10 @@ const TrendRadar = (function () {
       radius: R,
       pitch: geo.pitch,
       delta: geo.delta,
+      /* Der geringste Mittelpunktabstand in Nutzereinheiten. Der Browser
+         braucht ihn, um die Punkte auf eine lesbare Bildschirmgrösse zu
+         bringen, ohne dass sie sich ueberlagern. */
+      minDist: geo.minDist,
       bands: geo.bands,
       wedges: geo.wedges,
       sectorLabels: labels,
@@ -1027,7 +1086,7 @@ const TrendRadar = (function () {
     if (layout.wedges[0] && layout.wedges[0].sector) {
       var pad = layout.size.blip / 2 + layout.size.gap / 2;
       layout.wedges.forEach(function (w) {
-        out.push('<line x1="' + px(pad, w.a0) + '" y1="' + py(pad, w.a0) + '"' +
+        out.push('<line class="tr-sectorline" x1="' + px(pad, w.a0) + '" y1="' + py(pad, w.a0) + '"' +
           ' x2="' + px(layout.radius, w.a0) + '" y2="' + py(layout.radius, w.a0) + '"' +
           ' stroke="' + t.sectorLine + '" stroke-width="1"/>');
       });
@@ -1038,7 +1097,7 @@ const TrendRadar = (function () {
     if (layout.sectorLabels.length) {
       out.push("<g>");
       layout.sectorLabels.forEach(function (l) {
-        out.push('<text x="' + l.x.toFixed(2) + '" y="' + l.y.toFixed(2) + '" text-anchor="middle"' +
+        out.push('<text class="tr-sector-label" x="' + l.x.toFixed(2) + '" y="' + l.y.toFixed(2) + '" text-anchor="middle"' +
           ' dominant-baseline="central" style="fill:' + t.muted + ';font-family:' + fontVar(t, true) + ';' +
           'font-size:' + nOf(t.sectorLabelSize, 13, 8, 40) + 'px;font-weight:700">' + esc(l.text) + "</text>");
       });
@@ -1053,7 +1112,7 @@ const TrendRadar = (function () {
       var inner =
         '<circle cx="0" cy="0" r="' + b.r.toFixed(2) + '" style="fill:' + b.ring.color +
           ';stroke:var(--tr-blip-stroke,' + t.blipStroke + ');stroke-width:var(--tr-blip-stroke-width,' + t.blipStrokeWidth + ')"/>' +
-        '<text x="0" y="0" text-anchor="middle" dominant-baseline="central" style="fill:' + inkOn(b.ring.color) +
+        '<text class="tr-blip-nr" x="0" y="0" text-anchor="middle" dominant-baseline="central" style="fill:' + inkOn(b.ring.color) +
           ';font-family:' + fontVar(t, false) + ';font-size:' + layout.size.numberFont.toFixed(2) +
           'px;font-weight:700;font-variant-numeric:tabular-nums;pointer-events:none">' + b.entry.number + "</text>" +
         "<title>" + esc(label) + "</title>";
@@ -1063,9 +1122,16 @@ const TrendRadar = (function () {
 
       if (b.entry.url) {
         var bt = linkTarget(b.entry, layout.links.target);
+        /* Die Nummer steht voran, weil sie das Sichtbare im Punkt ist und
+           WCAG 2.5.3 verlangt, dass der zugaengliche Name den sichtbaren
+           Text enthaelt. Vorher stand nur der Trendname im aria-label, die
+           Ziffer daneben - Screenreader sagten einen anderen Text als das
+           Auge las. So ist die Nummer auch hoerbar und passt zur Legende,
+           auf die der Titel des Radars verweist. */
         out.push('<a class="tr-blip-link" href="' + esc(b.entry.url) + '"' +
           (bt ? ' target="' + bt + '" rel="noopener noreferrer"' : "") +
-          ' style="cursor:pointer" aria-label="' + esc(name + " \u2013 " + b.ring.name + " \u00f6ffnen") +
+          ' style="cursor:pointer" aria-label="' +
+          esc(b.entry.number + ": " + name + " \u00b7 " + b.ring.name + " \u00f6ffnen") +
           '">' + g + "</a>");
       } else {
         out.push(g);
@@ -1104,30 +1170,37 @@ const TrendRadar = (function () {
     return e.target || def;
   }
 
-  /* Ein Tooltip fuer die ganze Zeile. Die gespannte ::after-Flaeche des
-     Ankers liegt ueber allen Zellen und verdeckt deren Tooltips, also
-     sammelt die Zeile hier, was vorher an zwei Stellen stand: die
-     vollstaendige Beschreibung und das Ziel. */
+  /* Tooltip fuer die ganze Zeile. Die gespannte ::after-Flaeche des Ankers
+     liegt ueber allen Zellen und verdeckt deren Tooltips, also sammelt die
+     Zeile hier, was an zwei Stellen stand.
+
+     Nur die Adresse, nicht mehr die Beschreibung: die steht sichtbar in der
+     Spalte "Beschreibung" derselben Zeile und war im Tooltip doppelt. Das
+     ist zugleich der einzige Rest, den es hier noch zu zeigen gibt.
+
+     Ein title-Attribut ist eine Browser-Anzeige, kein Inhalt der Seite: sie
+     erscheint nicht beim Tastaturfokus und auf dem Telefon gar nicht. Sie
+     traegt hier deshalb nur eine zusaetzliche Angabe, die im href ohnehin
+     vorhanden ist - fehlt sie, geht nichts verloren. */
   function rowTitle(e) {
-    var parts = [];
-    if (e.description) parts.push(e.description);
-    if (e.url) parts.push(e.url);
-    return parts.join("\n");
+    return e.url ? e.url : "";
   }
 
   function nameCell(e, def) {
     if (!e.url) return esc(e.name);
     var t = linkTarget(e, def);
-    return '<a class="tr-link" href="' + esc(e.url) + '" title="' + esc(rowTitle(e)) + '"' +
+    var titel = rowTitle(e);
+    return '<a class="tr-link" href="' + esc(e.url) + '"' +
+      (titel ? ' title="' + esc(titel) + '"' : "") +
       (t ? ' target="' + t + '" rel="noopener noreferrer"' : "") + ">" + esc(e.name) + "</a>";
   }
 
-  /* Die Arbeitsagentur setzt in table.ba-table jede Zelle auf #020E25 -
-     auch die Beschreibung. Der graue Ton, den es da fuer Kleintext gibt
-     (.ba-microcopy, small), gilt fuer Beschreibungen nicht. */
+  /* Die Beschreibung traegt denselben Grundton #020E25 wie die uebrigen
+     Zellen. Der graue Sekundaerton der Palette gilt fuer Kleintext wie
+     Quellenangaben, nicht fuer den Fliesstext einer Beschreibung. */
   function descCell(e) {
     if (!e.description) return '<td data-label="Beschreibung" style="' + S.td + '">–</td>';
-    return '<td data-label="Beschreibung" style="' + S.td + '"><div style="' + S.clamp + '">' +
+    return '<td data-label="Beschreibung" style="' + S.td + '"><div>' +
       esc(e.description) + "</div></td>";
   }
 
@@ -1158,10 +1231,21 @@ const TrendRadar = (function () {
     }).join("") + "</colgroup>";
   }
 
+  /* scope="col" macht die Zuordnung Spaltenkopf zu Zelle explizit, statt sie
+     dem Browser zu ueberlassen. Chromium leitet sie zwar korrekt ab, aber
+     eine Pruefung nach WCAG 1.3.1 verlangt die erklaerte Beziehung. */
   function headRow(keys) {
     return "<tr>" + keys.map(function (k) {
-      return '<th style="' + S.th + '">' + COLS[k].head + "</th>";
+      return '<th scope="col" style="' + S.th + '">' + COLS[k].head + "</th>";
     }).join("") + "</tr>";
+  }
+
+  /* Jede Tabelle bekommt eine Beschriftung. Sie ist fuer das Auge versteckt
+     (S.sr), traegt aber den Namen der Tabelle in den Accessibility-Baum und
+     macht sie fuer Screenreader unterscheidbar - vier fast gleiche
+     Trendtabellen sind sonst nur an ihren Koepfen zu unterscheiden. */
+  function tabelleCaption(text) {
+    return '<caption style="' + S.sr + '">' + esc(text) + "</caption>";
   }
 
   /* Die Spalten gelten fuer alle Tabellen der jeweiligen Ansicht, damit
@@ -1203,6 +1287,7 @@ const TrendRadar = (function () {
       }).join("");
 
       blocks.push('<div class="tr-block" style="' + S.block + '"><table class="tr-table" style="' + S.table + '">' +
+        tabelleCaption("Alle Trends im Überblick") +
         colgroup(fk) + "<thead>" + headRow(fk) + "</thead><tbody>" + frows + "</tbody></table></div>");
     } else {
       var gk = legendColumns(hasSector, false);
@@ -1214,16 +1299,23 @@ const TrendRadar = (function () {
         }).join("");
 
         blocks.push(
-          '<section class="tr-ringblock" data-ring="' + esc(band.ring.id) + '" style="' + S.block + '">' +
+          '<section class="tr-ringblock" data-ring="' + esc(band.ring.id) + '"' +
+            ' aria-labelledby="tr-ringname-' + band.index + '" style="' + S.block + '">' +
             '<div class="tr-ringhead" style="' + S.ringHead + '">' + chip("", band.ring) +
-            '<span class="tr-ringname" style="font-family:' + fontVar(layout.theme, true) +
-            ';font-weight:700">' + esc(band.ring.name) + "</span>" +
+            /* Der Ringkopf ist die einzige Gliederungsebene unter dem Radar.
+               Als span war er fuer Screenreader nur Text; als h2 wird jeder
+               Ring ansteuerbar und der section-Bereck bekommt seinen Namen.
+               font-size:1em und margin:0 halten die Optik gegen die
+               Vorgaben des Browsers fuer h2 unveraendert. */
+            '<h2 class="tr-ringname" id="tr-ringname-' + band.index + '" style="font-family:' + fontVar(layout.theme, true) +
+            ';font-weight:700;font-size:1em;margin:0">' + esc(band.ring.name) + "</h2>" +
             '<span class="tr-count" style="' + S.muted + ';font-size:0.85em">' + members.length + " Trends</span>" +
             (band.ring.description
               ? '<span class="tr-ringdesc" style="' + S.muted + ';flex:1 1 22ch;min-width:0">' + esc(band.ring.description) + "</span>"
               : "") +
             "</div>" +
-            '<table class="tr-table" style="' + S.table + '">' + colgroup(gk) +
+            '<table class="tr-table" style="' + S.table + '">' +
+            tabelleCaption("Trends im Ring " + band.ring.name) + colgroup(gk) +
             "<thead>" + headRow(gk) + "</thead><tbody>" + rows + "</tbody></table>" +
           "</section>"
         );
@@ -1276,6 +1368,7 @@ const TrendRadar = (function () {
       "--tr-grid": theme.grid,
       "--tr-sector-line": theme.sectorLine,
       "--tr-border": theme.border,
+      "--tr-control": theme.control,
       "--tr-accent": theme.accent,
       "--tr-row-hover": theme.rowHover,
       /* Ohne diese beiden blieb "theme.font" und "theme.headSize" wirkungslos:
@@ -1369,8 +1462,6 @@ const TrendRadar = (function () {
       });
     }
 
-    paintLegend();
-
     /* Umschalter gruppiert / flach */
     if (toolbar) {
       toolbar.style.cssText = S.toolbar;
@@ -1385,6 +1476,14 @@ const TrendRadar = (function () {
       });
     }
 
+    /* paintLegend() erzeugt die Legende und setzt dabei aria-pressed. Es muss
+       deshalb NACH dem Aufbau des Toolbars laufen: vorher existieren die
+       Buttons noch nicht, die Schleife in paintLegend() laeuft ins Leere und
+       beide Schalter bleiben ohne Zustand - der aktive war dann nur an der
+       Hintergrundfarbe erkennbar. Ein Aufruf reicht, deshalb steht er hier
+       ausserhalb der Bedingung. */
+    paintLegend();
+
     /* Seitenraster: Kopf, Radar, Legende untereinander. Fest, ohne Messung
        und ohne Zustaendigkeit – die Legende liegt immer unter dem Radar,
        unabhaengig von der Rahmenbreite. */
@@ -1395,6 +1494,180 @@ const TrendRadar = (function () {
        von aussen überschreiben, ohne die Datei anzufassen. */
     var vars = cssVars(norm.theme);
     Object.keys(vars).forEach(function (k) { root.style.setProperty(k, vars[k]); });
+
+    /* Schrift und Punktgroesse an die tatsaechliche Verkleinerung anpassen.
+       Alle Werte im SVG stehen in Nutzereinheiten des viewBox. Wie stark die
+       Grafik verkleinert wird, haengt aber von der Buehne ab und schwankt
+       ueber die Rahmenbreiten um den Faktor 3,4 (gemessen: 0,32 bei
+       1024x600 bis 1,08 bei 1920x1600). Fest notierte 13 Einheiten wurden
+       dadurch zwischen 4,3 und 14 Bildschirmpixeln gross - auf dem Handy
+       unlesbar.
+       Gerechnet wird deshalb durchgaengig in Bildschirmpixeln: "k" ist die
+       Kehrwert der Skalierung, also Nutzereinheiten je Bildschirmpixel. Eine
+       Zielgroesse von 13 Pixeln entspricht 13*k Nutzereinheiten. Beim
+       Verlaengern des Fensters wird alles neu gerechnet, die Bildschirmgroesse
+       der Schrift bleibt dabei stehen. */
+    var ZIEL_LABEL = 13, ZIEL_NR = 11.4, ZIEL_BLIP = 15, MIN_LABEL = 9;
+
+    /* Rechtecke der Punkte im Bildschirmraum, einmal je Messung. */
+    function blipBoxes() {
+      var out = [];
+      Array.prototype.forEach.call(stage.querySelectorAll(".tr-blip circle"), function (c) {
+        var b = c.getBoundingClientRect();
+        out.push({ l: b.left, t: b.top, r: b.right, b: b.bottom });
+      });
+      return out;
+    }
+
+    function labelFits(t, boxes) {
+      var b = t.getBoundingClientRect();
+      var m = 3;
+      for (var i = 0; i < boxes.length; i++) {
+        var x = boxes[i];
+        if (b.left < x.r + m && b.right > x.l - m &&
+            b.top < x.b + m && b.bottom > x.t - m) return false;
+      }
+      return true;
+    }
+
+    /* Sektorbeschriftungen duerfen nie ueber den viewBox hinauslaufen: der
+       Browser schneidet alles ausserhalb ab. Der viewBox entsteht zur
+       Layout-Zeit aus "sectorLabelSize" in Nutzereinheiten, die Beschriftung
+       setzt fitText() aber auf ZIEL_LABEL * k Nutzereinheiten - bei k > 1
+       also um ein Vielfaches groesser. Bei 1280px ist k rund 1,83, wodurch
+       "Wirtschaft & Markt" mit 171,9 Einheiten Breite bis x = -425 lief,
+       waehrend die viewBox bei -409,42 endete: der Sektorname war dadurch
+       vollstaendig unsichtbar. Deshalb nach dem Setzen der Schriften den
+       echten Textumfang messen und den viewBox vergroessern, statt weiter
+       zu raten. */
+    function viewBoxFuerLabels(svg) {
+      var vb = svg.viewBox.baseVal;
+      if (!vb || !vb.width) return false;
+      var mitteX = vb.x + vb.width / 2, mitteY = vb.y + vb.height / 2;
+      var nX = vb.width / 2, nY = vb.height / 2, zuKlein = false;
+      Array.prototype.forEach.call(svg.querySelectorAll("text.tr-sector-label"), function (t) {
+        if (t.style.display === "none") return;
+        var bb = null;
+        try { bb = t.getBBox(); } catch (e) { return; }
+        if (!bb || !bb.width) return;
+        var l = mitteX - bb.x, r = bb.x + bb.width - mitteX;
+        var o = mitteY - bb.y, u = bb.y + bb.height - mitteY;
+        if (l > nX || r > nX || o > nY || u > nY) zuKlein = true;
+        nX = Math.max(nX, l, r);
+        nY = Math.max(nY, o, u);
+      });
+      if (!zuKlein) return false;
+      /* Etwas Luft, sonst klebt der Text genau am viewBox-Rand und wirkt
+         abgeschnitten, obwohl er vollstaendig da ist. */
+      nX += 6; nY += 6;
+      svg.setAttribute("viewBox",
+        (mitteX - nX).toFixed(2) + " " + (mitteY - nY).toFixed(2) + " " +
+        (nX * 2).toFixed(2) + " " + (nY * 2).toFixed(2));
+      return true;
+    }
+
+    function fitText() {
+      var svg = stage.querySelector("svg");
+      if (!svg || typeof svg.getScreenCTM !== "function") return;
+      var m = svg.getScreenCTM();
+      var k = m && m.a ? 1 / m.a : 1;
+      if (!isFinite(k) || k <= 0) return;
+      if (Math.abs(k - (fitText.last || 0)) < 0.02) return;
+      fitText.last = k;
+
+      /* Blips auf eine lesbare Mindestgroesse bringen. Der Durchmesser steht
+         in Nutzereinheiten und schrumpft auf dem Handy auf 8,8px - kleiner als
+         die Ziffer darin. Gewachsen wird nur so weit, wie es placeAll erlaubt:
+         der geringste Mittelpunktabstand ist minDist, und placeAll fordert
+         minDist >= blip. Der kleinste Abstand geteilt durch den Durchmesser
+         ist also die Grenze, bis zu der sich die Punkte nicht ueberlagern. */
+      var dUser = layout.size.blip;
+      var istPx = dUser / k;
+      var maxF = layout.minDist > 0 ? layout.minDist / dUser : 1;
+      var f = Math.min(maxF, Math.max(1, ZIEL_BLIP / istPx));
+      if (!isFinite(f) || f <= 0) f = 1;
+
+      if (Math.abs(f - (fitText.lastF || 0)) > 0.01) {
+        fitText.lastF = f;
+        Array.prototype.forEach.call(stage.querySelectorAll(".tr-blip circle"), function (c) {
+          if (!c.getAttribute("data-r")) c.setAttribute("data-r", c.getAttribute("r"));
+          c.setAttribute("r", (parseFloat(c.getAttribute("data-r")) * f).toFixed(2));
+        });
+        /* Die Sektorlinien beginnen am Bliprand. Wird der Punkt groesser, muss
+           die Linie mit nach aussen wandern, sonst steckt sie im Punkt. */
+        Array.prototype.forEach.call(stage.querySelectorAll(".tr-sectorline"), function (l) {
+          if (!l.getAttribute("data-x1")) {
+            l.setAttribute("data-x1", l.getAttribute("x1"));
+            l.setAttribute("data-y1", l.getAttribute("y1"));
+          }
+          l.setAttribute("x1", (parseFloat(l.getAttribute("data-x1")) * f).toFixed(2));
+          l.setAttribute("y1", (parseFloat(l.getAttribute("data-y1")) * f).toFixed(2));
+        });
+      }
+
+      /* Ziffern in den Blips: sie muessen in den gewachsenen Kreis passen.
+         Eine Ziffer ist rund 0,6em breit, dazu ein Rand von 2px je Seite.
+         Reicht der Platz nicht, weicht die Schrift zurueck - das ist besser
+         als eine Ziffer, die ueber den Punkt hinausragt. */
+      var innenPx = Math.max(0, (dUser * f) / k - 4);
+      var nrPx = Math.min(ZIEL_NR, innenPx / 0.6);
+      Array.prototype.forEach.call(stage.querySelectorAll(".tr-blip-nr"), function (t) {
+        t.style.fontSize = (nrPx * k).toFixed(2) + "px";
+      });
+
+      /* Sektorbeschriftungen: so gross wie moeglich, aber ohne die Punkte zu
+         beruehren. Die Punkte sind gewachsen und reichen weiter nach aussen
+         als die Beschriftung breit ist; je nach Rahmenbreite schrumpft die
+         Schrift deshalb ein Stueck, und was selbst bei der Untergrenze nicht
+         frei bleibt, wird ausgeblendet. */
+      var boxes = blipBoxes();
+      Array.prototype.forEach.call(stage.querySelectorAll(".tr-sector-label"), function (t) {
+        t.style.display = "";
+        var px = ZIEL_LABEL;
+        t.style.fontSize = (px * k).toFixed(2) + "px";
+        while (px > MIN_LABEL && !labelFits(t, boxes)) {
+          px = Math.max(MIN_LABEL, px - 0.5);
+          t.style.fontSize = (px * k).toFixed(2) + "px";
+        }
+        if (!labelFits(t, boxes)) t.style.display = "none";
+      });
+
+      /* Der Rand um die Punkte war in Nutzereinheiten notiert und schrumpfte
+         auf unter einem Bildschirmpixel zusammen. Dieselbe Rechnung gilt fuer
+         die Hervorhebung beim Ueberfahren, sonst waere der betonte Punkt auf
+         dem Handy feiner gezeichnet als der ruhende. */
+      root.style.setProperty("--tr-blip-stroke-width", (1.5 * k).toFixed(2) + "px");
+      root.style.setProperty("--tr-blip-stroke-hover", (3.5 * k).toFixed(2) + "px");
+
+      /* Passt der viewBox nicht zu den jetzt gesetzten Schriften, wird er
+         vergroessert und alles einmal neu gerechnet. Ein groesserer viewBox
+         senkt k, dadurch werden die Beschriftungen in Nutzereinheiten wieder
+         kleiner - das laeuft nach spaetestens zwei Durchlaeufen gegen. Die
+         Schleife ist trotzdem begrenzt, damit nichts endlos neu rechnet. */
+      if (viewBoxFuerLabels(svg)) {
+        fitText.durchlaeufe = (fitText.durchlaeufe || 0) + 1;
+        if (fitText.durchlaeufe < 3) {
+          fitText.last = 0;
+          fitText.lastF = 0;
+          return fitText();
+        }
+      }
+      fitText.durchlaeufe = 0;
+    }
+
+    fitText();
+    if (win && typeof win.ResizeObserver === "function" && stage) {
+      /* Nur die Buehne beobachtet werden: sie ist das einzige Element, dessen
+         Groesse die Skalierung bestimmt. */
+      var ro = new win.ResizeObserver(fitText);
+      ro.observe(stage);
+    }
+    if (win && win.addEventListener) {
+      /* Zweiter Weg, weil der Beobachter eine Groessenaenderung meldet, die
+         vor seinem ersten Durchlauf passiert, sonst nicht. Doppelte Aufrufe
+         sind unkritisch: fitText kehrt bei gleicher Skalierung sofort zurueck. */
+      win.addEventListener("resize", fitText);
+    }
 
     return layout;
   }
