@@ -147,12 +147,12 @@ function buildHtml(TR, layout, mode) {
 '     Inline-Attribute direkt an den Elementen. Deshalb funktioniert die Datei\n' +
 '     auch dort, wo ein CMS Skripte oder Stylesheets entfernt. -->\n' +
 '<head>\n' + headBlock(layout) + '</head>\n' +
-'<body style="margin:0;height:100%">\n' +
-'<div class="tr-root" style="' + S.root + 'border-radius:' + layout.theme.radius + 'px">' +
+'<body style="margin:0;height:100%;background:' + layout.theme.background + '">\n' +
+'<div class="tr-root" id="tr-root" style="' + S.root + TR.themeVarText(layout.theme) + 'border-radius:' + layout.theme.radius + 'px">' +
   '<header class="tr-head" id="tr-head" style="' + S.head + '">' + TR.renderHeadHTML(layout) + '</header>' +
-  '<div class="tr-stage" style="' + S.stage + '">' + TR.renderSVG(layout) + '</div>' +
+  '<div class="tr-stage" id="tr-stage" style="' + S.stage + '">' + TR.renderSVG(layout) + '</div>' +
   (mode
-    ? '<div class="tr-legend-wrap" style="' + S.wrap + '">' +
+    ? '<div class="tr-legend-wrap" id="tr-legend-wrap" style="' + S.wrap + '">' +
         TR.renderLegendHTML(layout, mode) + '</div>'
     : "") +
 '</div>\n' +

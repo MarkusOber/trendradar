@@ -47,14 +47,23 @@
     },
 
     "theme": {                 // jede Farbe auch als CSS-Variable überschreibbar
-      "background": "#ffffff", "ink": "#111111", "muted": "#6b7280",
-      "grid": "#e6e6e6", "sectorLine": "#cfcfcf", "border": "#e8e8e8",
-      "font": "system-ui, sans-serif", "fontSize": 14, "headSize": 21,
+      // Die Vorgabefarben sind dem Designsystem der Bundesagentur für Arbeit
+      // (DPL 3.11.1) entnommen: Navy #020E25 auf #F9FBFC, Rot #B30920 nur
+      // für Aktionen, harte Linien in den Graustufen der Palette.
+      "background": "#F9FBFC", "ink": "#020E25", "muted": "#495057",
+      "grid": "#DEE2E6", "sectorLine": "#ADB5BD", "border": "#595959",
+      "accent": "#B30920",     // Aktionen, Fokusring, aktiver Schalter
+      // Schriftstapel ohne Webfont: Roboto/Roboto Condensed sind auf vielen
+      // Systemen vorhanden, sonst greift Helvetica/Arial. Bewusst kein @font-face
+      // und kein <link> – die Datei muss auch offline und im iFrame stimmen.
+      "font": "Roboto, Helvetica Neue, Arial, sans-serif",
+      "headFont": "Roboto Condensed, Roboto, Arial Narrow, Arial, sans-serif",
+      "fontSize": 15, "headSize": 24,
       "sectorLabelSize": 13, "showSectorLabels": true
     },
 
     "rings":   [               // 3-6 Ringe, REIHENFOLGE = Zentrum -> Rand
-      { "id": "adopt", "name": "ADOPT", "color": "#2e7d32",
+      { "id": "adopt", "name": "ADOPT", "color": "#1F8904",
         "description": "Wird breit genutzt, wir investieren langfristig." }
     ],
 
@@ -88,7 +97,8 @@
   ─  ─ CSS-VARIABLEN (in einer eigenen <style>-Zeile überschreibbar)
   ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─
   --tr-bg --tr-ink --tr-muted --tr-grid --tr-sector-line --tr-border
-  --tr-font --tr-font-size --tr-blip-stroke --tr-blip-stroke-width
+  --tr-accent --tr-row-hover --tr-font --tr-head-font --tr-font-size
+  --tr-blip-stroke --tr-blip-stroke-width
 -->
 <html lang="de">
 <head>
@@ -109,24 +119,33 @@
   .tr-stage svg { width: 100%; height: 100%; display: block; }
 
   .tr-btn {
-    font: inherit; font-size: 0.85em; line-height: 1;
-    padding: 6px 12px; cursor: pointer;
-    border: 1px solid var(--tr-border, #e8e8e8);
+    font: inherit; font-size: 0.9em; line-height: 1.4;
+    padding: 6px 16px; cursor: pointer;
+    /* Feiner Rahmen aus dem Rasterton: --tr-border traegt die kräftige
+       Tabellenlinie der Arbeitsagentur und waere fuer einen Umriss zu
+       schwer. */
+    border: 1px solid var(--tr-grid, #DEE2E6);
     background: transparent; color: inherit;
-    border-radius: 999px;
+    /* Harte, kleine Radien statt Pillen – so baut das Designsystem der
+       Arbeitsagentur seine Schalter (.ba-btn: border-radius 5px,
+       padding .375rem 1rem). */
+    border-radius: 5px;
+    transition: box-shadow .08s;
   }
-  .tr-btn:hover { border-color: var(--tr-muted, #6b7280); }
+  .tr-btn:hover { border-color: var(--tr-ink, #020E25); }
+  /* Aktiv = Primäraktion in Rot, inaktiv = ruhiger Umriss. So bleibt der
+     Zustand auch ohne Farbe am Rahmen und an der Schrift erkennbar. */
   .tr-btn[aria-pressed="true"] {
-    background: var(--tr-ink, #111111);
-    border-color: var(--tr-ink, #111111);
-    color: var(--tr-bg, #ffffff);
+    background: var(--tr-accent, #B30920);
+    border-color: var(--tr-accent, #B30920);
+    color: var(--tr-bg, #F9FBFC);
   }
-  .tr-btn:focus-visible { outline: 2px solid var(--tr-ink, #111); outline-offset: 2px; }
+  .tr-btn:focus-visible { outline: 3px solid var(--tr-accent, #B30920); outline-offset: 2px; }
 
   /* Blip-Highlight: die Regel überschreibt nur eine CSS-Variable, die im
      Inline-Style als var(--tr-blip-stroke-width, ⬦) referenziert wird.
      Deshalb braucht es hier kein !important. */
-  tr.tr-row:hover { background: var(--tr-row-hover, #f6f6f6); }
+  tr.tr-row:hover { background: var(--tr-row-hover, rgba(2,14,37,.05)); }
   tr.tr-row { position: relative; }
   tr.tr-row.is-link { cursor: pointer; }
   /* Die ganze Zeile ist das Klickziel, aber der echte <a> bleibt im
@@ -137,11 +156,11 @@
      eine Pseudo-Element-Regel laesst sich nicht inline setzen, und die
      statische Ausgabe kommt ohne <style> aus. Dort bleibt der Link auf
      den Trendnamen beschraenkt - so wie dort auch kein Hover und keine
-     Tastaturhervorhebung stattfinden. */
+     Tastaturhervorhebung stattfindet. */
   tr.tr-row.is-link a.tr-link::after { content: ""; position: absolute; inset: 0; }
   tr.tr-row.is-link:focus-within {
-    background: var(--tr-row-hover, #f6f6f6);
-    outline: 2px solid var(--tr-ink, #111);
+    background: var(--tr-row-hover, rgba(2,14,37,.05));
+    outline: 3px solid var(--tr-accent, #B30920);
     outline-offset: -2px;
   }
   tr.tr-row.is-link a.tr-link:focus-visible { outline: none; }
@@ -152,8 +171,9 @@
   a.tr-blip-link:hover text { text-decoration: underline; }
 
   a { color: inherit; }
-  .tr-link { text-decoration: underline; text-underline-offset: 2px; }
-  .tr-link:hover { text-decoration-thickness: 2px; }
+  .tr-link { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+  .tr-link:hover { text-decoration-thickness: 2px; color: var(--tr-accent, #B30920); }
+
 
   /* Schmale Rahmen: die Beschreibungsspalte darf nicht auf einen nutzlosen
      Rest zusammenschrumpfen, weil sie als einzige keinen festen Anteil
@@ -161,10 +181,38 @@
      Mindestbreite in Pixeln; den Rest nimmt die Beschreibung.
      !important schlaegt hier die Inline-Breite am <col>, die fuer die
      statische Variante ohne <style> noetig bleibt. */
-  @media (max-width: 560px) {
+  @media (max-width: 575.98px) {
     .tr-col-name   { width: 21% !important; }
-    .tr-col-sector { width: 76px !important; }
+    .tr-col-sector { width: 96px !important; }
     .tr-col-desc   { width: auto !important; }
+  }
+
+  /* Gestapelte Tabelle auf schmalen Rahmen - genau der Weg, den die
+     Arbeitsagentur bei table.ba-table geht: die Kopfzeile wandert aus dem
+     Sichtfeld, jede Zelle wird ein Paar aus Bezeichnung und Wert, und die
+     Bezeichnung kommt aus dem data-label der Zelle.
+     Bewusst nur im <style>-Block: ein ::before mit content:attr() laesst
+     sich nicht inline setzen. Die statische Ausgabe bleibt deshalb eine
+     normale Tabelle mit Kopfzeile - dort ist sie nicht gestapelt. */
+  @media (max-width: 575.98px) {
+    .tr-table > thead {
+      position: absolute; top: auto; left: -10000px;
+      width: 1px; height: 1px; overflow: hidden;
+    }
+    .tr-table > tbody > tr > td {
+      display: flex; justify-content: flex-end;
+      padding: 12px 12px 0; border: 0;
+    }
+    .tr-table > tbody > tr > td::before {
+      content: attr(data-label);
+      display: block; margin-right: auto; padding-right: 1.5rem;
+      font-family: var(--tr-font, Roboto, Helvetica Neue, Arial, sans-serif);
+      font-weight: 700; text-align: left;
+    }
+    /* Die Arbeitsagentur setzt hier keine Linien. Eine Haarlinie unter dem
+       letzten Wertpaar haelt den Block trotzdem zusammen, wenn eine
+       Beschreibung laenger ist als der Rest der Zeile. */
+    .tr-table > tbody > tr > td:last-child { border-bottom: 1px solid var(--tr-border, #595959); }
   }
 
   /* Druck.
@@ -186,9 +234,16 @@
        genug Platz, damit die Legende noch auf Folie eins beginnen kann. */
     .tr-stage { max-height: 62vh !important; break-inside: avoid; page-break-inside: avoid; }
     .tr-legend-wrap { max-height: none !important; overflow: visible !important; display: block !important; }
-    .tr-ringblock { break-inside: avoid; page-break-inside: avoid; margin-top: 12px; }
+    /* Der Abstand zwischen den Ringbloecken kommt schon aus dem Raster der
+       Legende (gap). Ein zusaetzlicher Aussenabstand wuerde ihn beim Druck
+       nur verdoppeln. */
+    .tr-ringblock { break-inside: avoid; page-break-inside: avoid; }
     .tr-row { break-inside: avoid; page-break-inside: avoid; }
     a.tr-link { text-decoration: none; }
+    /* Auf Papier braucht eine Zelle nicht die 12px des Bildschirms: 14 Zeilen
+       mal 24px gespart sind gut eine halbe Seite. Ohne das !important bliebe
+       der Bildschirmabstand stehen, weil er am <td> inline steht. */
+    .tr-table th, .tr-table td { padding: 4px 8px 4px 0 !important; }
   }
 </style>
 </head>
@@ -212,27 +267,29 @@
   },
 
   "theme": {
-    "background": "#ffffff",
-    "ink": "#111111",
-    "muted": "#6b7280",
-    "grid": "#e6e6e6",
-    "sectorLine": "#cfcfcf",
-    "border": "#e8e8e8",
-    "font": "system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
-    "fontSize": 14,
-    "headSize": 21,
+    "background": "#F9FBFC",
+    "ink": "#020E25",
+    "muted": "#495057",
+    "grid": "#DEE2E6",
+    "sectorLine": "#ADB5BD",
+    "border": "#595959",
+    "accent": "#B30920",
+    "font": "Roboto, Helvetica Neue, Arial, sans-serif",
+    "headFont": "Roboto Condensed, Roboto, Arial Narrow, Arial, sans-serif",
+    "fontSize": 15,
+    "headSize": 24,
     "sectorLabelSize": 13,
     "showSectorLabels": true
   },
 
   "rings": [
-    { "id": "adopt",  "name": "ADOPT",  "color": "#2e7d32",
+    { "id": "adopt",  "name": "ADOPT",  "color": "#1F8904",
       "description": "Breit belegt und erprobt. Wir investieren langfristig und empfehlen die breite Nutzung." },
-    { "id": "trial",  "name": "TRIAL",  "color": "#0e7490",
+    { "id": "trial",  "name": "TRIAL",  "color": "#0B70EB",
       "description": "Hat sich im Projektalltag bewährt. Erste echte Nutzungserfahrungen, leicht höheres Risiko." },
-    { "id": "assess", "name": "ASSESS", "color": "#b45309",
+    { "id": "assess", "name": "ASSESS", "color": "#FF8500",
       "description": "Vielversprechend, aber noch ungenügend erprobt. Forschung und Prototyping lohnen sich." },
-    { "id": "hold",   "name": "HOLD",   "color": "#b91c1c",
+    { "id": "hold",   "name": "HOLD",   "color": "#E50000",
       "description": "Für Neuprojekte nicht empfohlen. Bestehende Projekte dürfen weiterlaufen." }
   ],
 
@@ -314,16 +371,24 @@ const TrendRadar = (function () {
   "use strict";
 
   var TAU = Math.PI * 2;
-  var RING_FALLBACK = ["#2e7d32", "#0e7490", "#b45309", "#b91c1c", "#6b21a8", "#334155"];
+
+  /* Die Vorgabefarben stammen aus dem Designsystem der Bundesagentur für
+     Arbeit (DPL 3.11.1) und sind dort als Hex belegt: #020E25 Grundtext,
+     #F9FBFC Flaeche, #B30920 Aktion, #495057 Sekundaertext, #DEE2E6 und
+     #E4E5E7 feine Linien, #ADB5BD Sektorlinien, #595959 Tabellenlinien
+     (die Tabellenflaeche der Arbeitsagentur). */
+  var RING_FALLBACK = ["#1F8904", "#0B70EB", "#FF8500", "#E50000", "#0dcaf0", "#3D4657"];
 
   var THEME_DEFAULT = {
-    background: "#ffffff", ink: "#111111", muted: "#6b7280",
-    grid: "#e6e6e6", sectorLine: "#cfcfcf", border: "#e8e8e8",
-    bandOpacity: 0.10, bandOpacityAlt: 0.05,
+    background: "#F9FBFC", ink: "#020E25", muted: "#495057",
+    grid: "#DEE2E6", sectorLine: "#ADB5BD", border: "#595959",
+    accent: "#B30920", rowHover: "rgba(2,14,37,.05)",
+    bandOpacity: 0.12, bandOpacityAlt: 0.06,
     blipStroke: "#00000026", blipStrokeWidth: 2,
-    font: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    fontSize: 14, headSize: 21, sectorLabelSize: 13, showSectorLabels: true,
-    radius: 8
+    font: "Roboto, Helvetica Neue, Arial, sans-serif",
+    headFont: "Roboto Condensed, Roboto, Arial Narrow, Arial, sans-serif",
+    fontSize: 15, headSize: 24, sectorLabelSize: 13, showSectorLabels: true,
+    radius: 5
   };
 
   var LAYOUT_DEFAULT = {
@@ -342,12 +407,12 @@ const TrendRadar = (function () {
        seine Quadratform auf die Spalte ausdehnen und die Legende
        nach unten schieben. Die Legende scrollt intern, die Seite selbst
        nicht – das ist das erwartete Verhalten im IFrame. */
-    root: "margin:0;box-sizing:border-box;display:grid;gap:14px;padding:18px;height:100vh;height:100dvh;min-height:320px;" +
-          "background:var(--tr-bg,#ffffff);color:var(--tr-ink,#111111);font-family:var(--tr-font,sans-serif);font-size:var(--tr-font-size,14px);" +
-          "grid-template-areas:'head' 'stage' 'legend';grid-template-rows:auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr)",
+    root: "margin:0;box-sizing:border-box;display:grid;gap:14px;padding:16px;height:100vh;height:100dvh;min-height:320px;" +
+          "background:var(--tr-bg,#F9FBFC);color:var(--tr-ink,#020E25);" +
+          "font-family:var(--tr-font,Roboto,Helvetica Neue,Arial,sans-serif);font-size:var(--tr-font-size,15px);" +
+          "grid-template-areas:'head' 'stage' 'legend';grid-template-rows:auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);",
     head: "grid-area:head;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px",
-    headTitle: "margin:0;font-size:1.5em;line-height:1.2;font-weight:700;letter-spacing:-0.01em",
-    headMeta: "color:var(--tr-muted,#6b7280)",
+    headMeta: "color:var(--tr-muted,#495057)",
     stage:
 "grid-area:stage;display:grid;place-items:center;min-height:0;min-width:0;min-height:200px;overflow:hidden",
     /* Das SVG fuellt die Buehne exakt und wird von preserveAspectRatio
@@ -358,26 +423,41 @@ const TrendRadar = (function () {
        das Hauptelement, die Tabelle ist Nachschlagewerk. */
     wrap: "grid-area:legend;min-height:0;max-height:38vh;max-height:38dvh;overflow:auto;display:flex;flex-direction:column;gap:10px",
     toolbar: "display:flex;gap:8px;align-items:center;justify-content:flex-end;flex:none",
-    legend: "display:flex;flex-direction:column;gap:16px",
+    /* Der Abstand zwischen den Tabellen ist das, was die Gruppen trennt. Mit
+       16px lag er nur ein Drittel einer Zeile hoch - die Tabelle darunter las
+       sich als Fortsetzung der oberen. 30px oben und 12px unter dem Ringnamen
+       machen die Zugehoerigkeit eindeutig: eng an die eigene Tabelle, weit von
+       der vorherigen. */
+    legend: "display:flex;flex-direction:column;gap:30px",
     block: "display:block",
-    ringHead: "display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:0 0 8px",
+    ringHead: "display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:0 0 12px",
     /* table-layout:fixed ist hier der entscheidende Punkt. Mit "auto"
        rechnet jedes <table> die Spaltenbreiten aus seinem eigenen Inhalt
        aus, und die bis zu sechs Ringbloecke stuenden dann gegeneinander
        versetzt. "fixed" nimmt die Breiten aus <colgroup> und macht alle
        Tabellen untereinander deckungsgleich. */
-    table: "width:100%;border-collapse:collapse;table-layout:fixed",
-    th: "text-align:left;font-size:0.85em;font-weight:600;letter-spacing:0.03em;text-transform:uppercase;" +
-        "color:var(--tr-muted,#6b7280);padding:5px 10px 5px 0;border-bottom:1px solid var(--tr-border,#e8e8e8)",
-    td: "vertical-align:top;padding:6px 10px 6px 0;border-top:1px solid var(--tr-border,#e8e8e8);line-height:1.45;overflow-wrap:anywhere",
-    tdNum: "vertical-align:top;padding:6px 10px 6px 0;border-top:1px solid var(--tr-border,#e8e8e8);line-height:1.45;width:42px",
+    /* Tabellenraster nach dem Muster der Arbeitsagentur (table.ba-table):
+       12px Innenabstand rundum, eine 1px-Linie unten an jeder Zelle und
+       eine 2px-Linie unter der Kopfzeile. Keine senkrechten Trenner und
+       kein Zebra - beides macht die Seite dort auch nicht. */
+    table: "width:100%;border-collapse:collapse;table-layout:fixed;vertical-align:top",
+    th: "text-align:left;font-size:1em;font-weight:700;color:var(--tr-ink,#020E25);" +
+        "padding:12px;background:transparent;border-top:0;border-bottom:2px solid var(--tr-border,#595959)",
+    /* Jede dieser Strings wird an andere angehaengt (S.td + S.muted zum
+       Beispiel). Deshalb endet jeder davon auf einem Semikolon - sonst
+       entstehen Aufgaben wie "overflow-wrap:anywherecolor:...". */
+    td: "vertical-align:top;padding:12px;color:var(--tr-ink,#020E25);background:transparent;" +
+        "border-bottom:1px solid var(--tr-border,#595959);line-height:1.45;overflow-wrap:anywhere;",
+    /* Die Nummerenspalte muss Badge plus 24px Innenabstand fassen. */
+    tdNum: "vertical-align:top;padding:12px;color:var(--tr-ink,#020E25);background:transparent;" +
+        "border-bottom:1px solid var(--tr-border,#595959);line-height:1.45;width:48px;",
     /* Ohne die Link-Spalte ist die Beschreibung breit genug, dass fast
        jeder Text vollstaendig ueber zwei bis drei Zeilen steht. Gekappt
        wird nur, was darueber hinausgeht - der Rest steht im Tooltip der
        Zeile. */
     clamp: "display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden",
-    muted: "color:var(--tr-muted,#6b7280)",
-    errBox: "margin:40px auto;max-width:64ch;padding:20px 24px;border:1px solid var(--tr-border,#e8e8e8);border-radius:10px;line-height:1.6"
+    muted: "color:var(--tr-muted,#495057)",
+    errBox: "margin:40px auto;max-width:64ch;padding:20px 24px;border:1px solid var(--tr-border,#595959);border-radius:5px;line-height:1.6"
   };
 
 
@@ -387,6 +467,39 @@ const TrendRadar = (function () {
   function num(v, d) { var n = Number(v); return isFinite(n) ? n : d; }
   function isHex(c) { return typeof c === "string" && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(c.trim()); }
   function color(v, d) { return isHex(v) ? v.trim() : d; }
+
+  /* Ein Schriftstapel landet in einem style-Attribut. Anfuehrungszeichen,
+     Semikolon, spitze Klammern und Backslash fliegen deshalb raus: ein
+     Semikolon wuerde die Inline-Regel beenden und den Rest einschleusen.
+     Mehrwortfamilien ohne Anfuehrungszeichen sind gueltiges CSS, der
+     Stapel bleibt also lesbar. */
+  function fontStack(v, d) {
+    var clean = str(v, "").replace(/["'\\;<>{}()]/g, " ").replace(/\s+/g, " ").trim();
+    return clean || d;
+  }
+
+  /* Wie fontStack, nur bleiben Klammern und Kommas stehen: hier stehen
+     rgba()-Werte. */
+  function cssValue(v, d) {
+    var clean = str(v, "").replace(/["'\\;<>{}]/g, "").replace(/\s+/g, " ").trim();
+    return clean || d;
+  }
+
+  /* Verweist auf die Variable, damit der Host ueberschreiben kann, und
+     nennt den aufgeloesten Stapel als Rueckfall. Ohne den Rueckfall waere
+     die statische Variante (ohne <style> und ohne gesetzte Variablen) auf
+     die allgemeinste Sans-Schrift zurueckgefallen. */
+  function fontVar(theme, head) {
+    return "var(--tr-" + (head ? "head-" : "") + "font," + fontStack(head ? theme.headFont : theme.font, "sans-serif") + ")";
+  }
+
+  /* Ueberschrift: die zweiteilige Schrift des Designsystems, feste Groesse
+     aus dem Thema. Ohne negativen Sperrung, weil eine schmale Schrift
+     dadurch enger und nicht breiter wirkt. */
+  function headTitleCss(theme) {
+    return "margin:0;font-family:" + fontVar(theme, true) +
+      ";font-size:" + nOf(theme.headSize, 24, 10, 96) + "px;line-height:1.2;font-weight:700";
+  }
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -519,6 +632,19 @@ const TrendRadar = (function () {
     out.theme = mergeDeep(THEME_DEFAULT, data.theme);
     out.theme.showSectorLabels = data.theme && data.theme.showSectorLabels !== undefined
       ? !!data.theme.showSectorLabels : true;
+    /* Alles, was ungeprueft in ein style-Attribut wandert, kommt hier durch
+       den passenden Filter. Farben als Hex, Schriftstapel und rgba-Werte
+       ohne die Zeichen, die eine Inline-Regel beenden oder aufbrechen
+       koennten. */
+    out.theme.font = fontStack(out.theme.font, THEME_DEFAULT.font);
+    out.theme.headFont = fontStack(out.theme.headFont, THEME_DEFAULT.headFont);
+    out.theme.rowHover = cssValue(out.theme.rowHover, THEME_DEFAULT.rowHover);
+    out.theme.blipStroke = isHex(out.theme.blipStroke) ? out.theme.blipStroke.trim() : THEME_DEFAULT.blipStroke;
+    out.theme.bandOpacity = nOf(out.theme.bandOpacity, THEME_DEFAULT.bandOpacity, 0, 1);
+    out.theme.bandOpacityAlt = nOf(out.theme.bandOpacityAlt, THEME_DEFAULT.bandOpacityAlt, 0, 1);
+    out.theme.fontSize = nOf(out.theme.fontSize, THEME_DEFAULT.fontSize, 8, 48);
+    out.theme.headSize = nOf(out.theme.headSize, THEME_DEFAULT.headSize, 10, 96);
+    out.theme.radius = nOf(out.theme.radius, THEME_DEFAULT.radius, 0, 40);
 
     out.layout = mergeDeep(LAYOUT_DEFAULT, data.layout);
     out.layout.legend = mergeDeep(LAYOUT_DEFAULT.legend, (data.layout || {}).legend);
@@ -913,8 +1039,8 @@ const TrendRadar = (function () {
       out.push("<g>");
       layout.sectorLabels.forEach(function (l) {
         out.push('<text x="' + l.x.toFixed(2) + '" y="' + l.y.toFixed(2) + '" text-anchor="middle"' +
-          ' dominant-baseline="central" style="fill:' + t.muted + ';font-family:var(--tr-font,sans-serif);' +
-          'font-size:' + nOf(t.sectorLabelSize, 13, 8, 40) + 'px;font-weight:600">' + esc(l.text) + "</text>");
+          ' dominant-baseline="central" style="fill:' + t.muted + ';font-family:' + fontVar(t, true) + ';' +
+          'font-size:' + nOf(t.sectorLabelSize, 13, 8, 40) + 'px;font-weight:700">' + esc(l.text) + "</text>");
       });
       out.push("</g>");
     }
@@ -928,7 +1054,7 @@ const TrendRadar = (function () {
         '<circle cx="0" cy="0" r="' + b.r.toFixed(2) + '" style="fill:' + b.ring.color +
           ';stroke:var(--tr-blip-stroke,' + t.blipStroke + ');stroke-width:var(--tr-blip-stroke-width,' + t.blipStrokeWidth + ')"/>' +
         '<text x="0" y="0" text-anchor="middle" dominant-baseline="central" style="fill:' + inkOn(b.ring.color) +
-          ';font-family:var(--tr-font,sans-serif);font-size:' + layout.size.numberFont.toFixed(2) +
+          ';font-family:' + fontVar(t, false) + ';font-size:' + layout.size.numberFont.toFixed(2) +
           'px;font-weight:700;font-variant-numeric:tabular-nums;pointer-events:none">' + b.entry.number + "</text>" +
         "<title>" + esc(label) + "</title>";
 
@@ -996,9 +1122,12 @@ const TrendRadar = (function () {
       (t ? ' target="' + t + '" rel="noopener noreferrer"' : "") + ">" + esc(e.name) + "</a>";
   }
 
+  /* Die Arbeitsagentur setzt in table.ba-table jede Zelle auf #020E25 -
+     auch die Beschreibung. Der graue Ton, den es da fuer Kleintext gibt
+     (.ba-microcopy, small), gilt fuer Beschreibungen nicht. */
   function descCell(e) {
-    if (!e.description) return '<td style="' + S.td + S.muted + '">\u2013</td>';
-    return '<td style="' + S.td + S.muted + '"><div style="' + S.clamp + '">' +
+    if (!e.description) return '<td data-label="Beschreibung" style="' + S.td + '">–</td>';
+    return '<td data-label="Beschreibung" style="' + S.td + '"><div style="' + S.clamp + '">' +
       esc(e.description) + "</div></td>";
   }
 
@@ -1009,12 +1138,14 @@ const TrendRadar = (function () {
      auseinanderlaufen koennen. "desc" bezieht den Rest.
      Eine eigene Linkspalte gibt es nicht mehr: die ganze Zeile ist der
      Anker, das Ziel steht im Tooltip. Damit gehoert der Platz der
-     Beschreibung. */
+     Beschreibung.
+     Die festen Breiten beruecksichtigen den Innenabstand von 12px je Seite:
+     die Nummerenspalte braucht 24px davon plus das 22px-Badge. */
   var COLS = {
-    num:    { w: "42px", head: "Nr" },
-    name:   { w: "30%",  head: "Trend" },
-    ring:   { w: "58px", head: "Ring" },
-    sector: { w: "18%",  head: "Sektor" },
+    num:    { w: "48px", head: "Nr" },
+    name:   { w: "28%",  head: "Trend" },
+    ring:   { w: "92px", head: "Ring" },
+    sector: { w: "17%",  head: "Sektor" },
     desc:   { w: "auto", head: "Beschreibung" }
   };
 
@@ -1043,16 +1174,19 @@ const TrendRadar = (function () {
   }
 
   /* Eine Tabellenzeile. Zeilen ohne Ziel bleiben stumm: kein Pointer, kein
-     Anker, kein Tooltip. */
+     Anker, kein Tooltip.
+     data-label steht an jeder Zelle: unter 576px verbirgt der Style-Block
+     die Kopfzeile und holt sich daraus die Spaltenbezeichnung - so
+     bleibt die Tabelle auch gestapelt ohne zweite Kopfzeile lesbar. */
   function legendRow(b, hasSector, withRing, target) {
     var e = b.entry;
     return '<tr class="tr-row' + (e.url ? " is-link" : "") + '" data-nr="' + e.number + '">' +
-      '<td style="' + S.tdNum + '">' + nrBadge(b.ring, e.number) + "</td>" +
-      '<td style="' + S.td + '">' + nameCell(e, target) + "</td>" +
-      (withRing ? '<td style="' + S.td + '">' + chip("", b.ring) + " " + esc(b.ring.name) + "</td>" : "") +
+      '<td data-label="Nr" style="' + S.tdNum + '">' + nrBadge(b.ring, e.number) + "</td>" +
+      '<td data-label="Trend" style="' + S.td + '">' + nameCell(e, target) + "</td>" +
+      (withRing ? '<td data-label="Ring" style="' + S.td + '">' + chip("", b.ring) + " " + esc(b.ring.name) + "</td>" : "") +
       (hasSector
-        ? '<td style="' + S.td + '">' +
-          (e.sector ? esc(e.sector.name) : '<span style="' + S.muted + '">\u2013</span>') + "</td>"
+        ? '<td data-label="Sektor" style="' + S.td + '">' +
+          (e.sector ? esc(e.sector.name) : '<span style="' + S.muted + '">–</span>') + "</td>"
         : "") +
       descCell(e) + "</tr>";
   }
@@ -1082,10 +1216,11 @@ const TrendRadar = (function () {
         blocks.push(
           '<section class="tr-ringblock" data-ring="' + esc(band.ring.id) + '" style="' + S.block + '">' +
             '<div class="tr-ringhead" style="' + S.ringHead + '">' + chip("", band.ring) +
-            '<span class="tr-ringname" style="font-weight:700;letter-spacing:0.04em">' + esc(band.ring.name) + "</span>" +
-            '<span class="tr-count" style="color:var(--tr-muted,#6b7280);font-size:0.85em">' + members.length + " Trends</span>" +
+            '<span class="tr-ringname" style="font-family:' + fontVar(layout.theme, true) +
+            ';font-weight:700">' + esc(band.ring.name) + "</span>" +
+            '<span class="tr-count" style="' + S.muted + ';font-size:0.85em">' + members.length + " Trends</span>" +
             (band.ring.description
-              ? '<span class="tr-ringdesc" style="color:var(--tr-muted,#6b7280);flex:1 1 22ch;min-width:0">' + esc(band.ring.description) + "</span>"
+              ? '<span class="tr-ringdesc" style="' + S.muted + ';flex:1 1 22ch;min-width:0">' + esc(band.ring.description) + "</span>"
               : "") +
             "</div>" +
             '<table class="tr-table" style="' + S.table + '">' + colgroup(gk) +
@@ -1103,7 +1238,7 @@ const TrendRadar = (function () {
 
   function renderHeadHTML(layout) {
     var bits = [];
-    bits.push('<h1 class="tr-title" style="' + S.headTitle + '">' + esc(layout.meta.title) + "</h1>");
+    bits.push('<h1 class="tr-title" style="' + headTitleCss(layout.theme) + '">' + esc(layout.meta.title) + "</h1>");
     var meta = [];
     if (layout.meta.date) meta.push(esc(layout.meta.date));
     meta.push(layout.blips.length + " Trends");
@@ -1124,7 +1259,7 @@ const TrendRadar = (function () {
     errors.forEach(function (e) { html += "<li>" + esc(e) + "</li>"; });
     html += "</ul>";
     if (warnings && warnings.length) {
-      html += '<p style="margin:0 0 6px;font-weight:600">Hinweise</p><ul style="margin:0;padding-left:20px;color:var(--tr-muted,#6b7280)">';
+      html += '<p style="margin:0 0 6px;font-weight:700">Hinweise</p><ul style="margin:0;padding-left:20px;color:var(--tr-muted,#495057)">';
       warnings.forEach(function (w) { html += "<li>" + esc(w) + "</li>"; });
     }
     html += "</div>";
@@ -1141,10 +1276,26 @@ const TrendRadar = (function () {
       "--tr-grid": theme.grid,
       "--tr-sector-line": theme.sectorLine,
       "--tr-border": theme.border,
+      "--tr-accent": theme.accent,
+      "--tr-row-hover": theme.rowHover,
+      /* Ohne diese beiden blieb "theme.font" und "theme.headSize" wirkungslos:
+         die Regeln referenzieren nur die Variablen, niemand hat sie bisher
+         gesetzt. */
+      "--tr-font": theme.font,
+      "--tr-head-font": theme.headFont,
       "--tr-font-size": theme.fontSize + "px",
       "--tr-blip-stroke": theme.blipStroke,
       "--tr-blip-stroke-width": theme.blipStrokeWidth + "px"
     };
+  }
+
+  /* Dieselben Variablen als Inline-Text fuer den statischen Build. Die
+     Variablen erben auf alle Nachfahren, deshalb genuegt eine Zeile auf
+     .tr-root - auch das SVG im Inneren zieht Schrift und Farben daraus. */
+  function themeVarText(theme) {
+    var v = cssVars(theme), out = "";
+    Object.keys(v).forEach(function (k) { out += k + ":" + v[k] + ";"; });
+    return out;
   }
 
   function mount(root, rawData) {
@@ -1163,6 +1314,14 @@ const TrendRadar = (function () {
     }
 
     var layout = computeLayout(norm);
+
+    /* Die Flaeche haengt am Wurzel-Element, das deckungsgleich 100dvh hoch
+       ist. Beim Ueberziehen auf dem Handy wuerde darunter aber die weisse
+       Browserflaeche durchscheinen - deshalb faerbt auch <body>. */
+    if (doc && doc.body && layout.theme && layout.theme.background) {
+      doc.body.style.background = layout.theme.background;
+    }
+
     if (layout.overflow && typeof console !== "undefined") {
       console.warn("[Trendradar] " + layout.warnings[layout.warnings.length - 1]);
     }
@@ -1279,6 +1438,7 @@ const TrendRadar = (function () {
     renderHeadHTML: renderHeadHTML,
     renderErrorHTML: renderErrorHTML,
     cssVars: cssVars,
+    themeVarText: themeVarText,
     mount: mount,
     autoInit: autoInit,
     readEmbeddedData: readEmbeddedData
