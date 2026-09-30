@@ -7,8 +7,17 @@
   1. Kopieren. Fertig. Die Datei laeuft per Doppelklick, per <iframe src> und
      auf jedem statischen Hosting. Kein Server, kein Build, keine Abhaengigkeit.
 
-  2. Alles Anpassbare steht im JSON-Block weiter unten ("trendradar-data").
-     Nur diesen Block aendern - der Rest der Datei bleibt unangetastet.
+  2. Alles Anpassbare steht im JSON-Block weiter unten, in einem
+     versteckten textarea mit der id "trendradar-data". Nur diesen Block
+     aendern - der Rest der Datei bleibt unangetastet. Zulaessig sind auch
+     ein template oder ein script mit application/json, falls die Datei
+     maschinell erzeugt wird.
+
+  2a. Der Block steht bewusst in einem textarea statt in einem script mit
+     application/json. CMS verwerfen beim Speichern gern den Inhalt von
+     script-Elementen mit unbekanntem Typ und lassen das Tag leer
+     zurueck. Ein textarea ueberlebt das, und weil er RCDATA ist, muessen
+     < > und & beim Schreiben nicht escaped werden.
 
   3. Fuer eine Umgebung ohne JavaScript (z. B. iFrame mit sandbox ohne
      allow-scripts, oder ein CMS, das <script> entfernt):
@@ -292,8 +301,21 @@
 
 <!--   ──  DATEN - ab hier bis zum Ende des Blocks bearbeitbar.
      Der JSON-Block muss schemaVersion, rings und entries enthalten.
+     Geschlossen wird er mit einem </textarea>.
+
+     Traeger ist absichtlich ein verstecktes textarea und kein
+     script mit type application/json: manche CMS leeren beim Speichern
+     die Inhalte unbekannter script-Typen, ein textarea ueberlebt das.
+     Als RCDATA-Element wird sein Inhalt nicht als Markup gelesen,
+     deshalb bleiben < > und & im JSON unveraendert lesbar - beim
+     Bearbeiten muss also nichts escaped werden. Die Engine akzeptiert
+     weiterhin auch script und template, siehe readEmbeddedData().
+
+     Der einzige Fall, der wirklich escaped werden muss: ein </textarea>
+     im Text wuerde den Block vorzeitig schliessen. readEmbeddedData()
+     faengt das ab und meldet es.
      ────────────────────────────────────────────────────────────────── -->
-<script type="application/json" id="trendradar-data">
+<textarea class="tr-data" id="trendradar-data" hidden aria-hidden="true" readonly>
 {
   "schemaVersion": 1,
   "title": "Trendradar 2026",
@@ -382,7 +404,7 @@
       "description": "Anlauf und Flächenkonflikte wiegen den theoretischen Ertrag nicht auf. Dieser Text ist absichtlich lang, damit man sieht, wie die Beschreibungsspalte begrenzt wird: sie kappt bei etwa 90 Zeichen und legt den vollen Text als Tooltip daneben, statt die Tabelle in die Breite zu treiben." }
   ]
 }
-</script>
+</textarea>
 
 <main class="tr-root" id="tr-root">
   <header class="tr-head" id="tr-head"></header>
@@ -601,7 +623,7 @@ const TrendRadar = (function () {
     var out = { meta: {}, rings: [], sectors: [], entries: [], warnings: warnings, errors: errors };
 
     if (!data || typeof data !== "object" || Array.isArray(data)) {
-      errors.push("Keine Daten gefunden. Der JSON-Block \"trendradar-data\" ist leer oder ungültig.");
+      errors.push("Keine Daten gefunden. Der JSON-Block muss schemaVersion, rings und entries enthalten und steht in einem textarea, template oder script mit application/json.");
       return out;
     }
     out.meta = {
@@ -1672,33 +1694,196 @@ const TrendRadar = (function () {
     return layout;
   }
 
-  function readEmbeddedData(doc) {
-    var el = doc.getElementById("trendradar-data");
-    if (!el) return null;
-    try {
-      return JSON.parse(el.textContent || el.innerText || "{}");
-    } catch (err) {
-      if (typeof console !== "undefined") console.error("[Trendradar] JSON-Block ist ungültig: " + err.message);
-      return { __parseError: err.message };
+  /* ── 4. Daten finden, einbauen, absichern ──────────────────────────
+     Der Teil, der in fremden Umgebungen entscheidet. Bewusst ohne
+     Festlegung auf ids oder Klassen: ein CMS darf umbenennen, umstellen
+     oder beim Speichern leeren, und die Datei soll trotzdem laufen. */
+
+  /* Was ueberhaupt Daten tragen kann. Der Normaelfall ist ein verstecktes
+     textarea, weil es als RCDATA auch < > und & unveraendert laesst.
+     script und template bleiben zulaessig fuer Varianten, die von Hand
+     gebaut oder aus einem anderen Generator kommen. */
+  function isCarrier(el) {
+    if (!el) return false;
+    var tag = el.tagName;
+    if (tag === "TEXTAREA" || tag === "TEMPLATE") return true;
+    if (tag === "SCRIPT") {
+      var t = (el.getAttribute("type") || "").toLowerCase();
+      return t === "application/json" || t === "text/json" || t === "application/ld+json";
     }
+    return false;
+  }
+
+  function dataText(el) {
+    if (!el) return "";
+    if (el.tagName === "TEMPLATE") return (el.content ? el.content.textContent : el.textContent) || "";
+    if (el.tagName === "TEXTAREA") return el.value || el.textContent || "";
+    return el.textContent || "";
+  }
+
+  /* Damit werden JSON-LD-Blöcke und andere Nebensachen aussortiert, die
+     zwar gültiges JSON liefern aber nichts mit dem Radar zu tun haben. */
+  function looksLikeData(d) {
+    return !!(d && typeof d === "object" && !Array.isArray(d) && (d.rings || d.entries || d.schemaVersion));
+  }
+
+  /* Die Daten gehören zu genau einem Radar. Deshalb wird nicht global per
+     id gesucht, sondern der nächste Träger oberhalb des Wurzelelements
+     genommen, erster Treffer gewinnt. Damit laufen mehrere Radars auf
+     einer Seite nebeneinander, ohne dass eine id eindeutig sein muss. */
+  function carriersBefore(root, doc) {
+    var out = [];
+    function add(el) { if (isCarrier(el) && out.indexOf(el) < 0) out.push(el); }
+    var node = root;
+    while (node && node !== doc.documentElement) {
+      var sib = node.previousElementSibling;
+      while (sib) {
+        /* Das Geschwister selbst zuerst, danach was darin steckt. Ohne den
+           ersten Schritt fiele ein nacktes textarea neben dem Radar durch:
+           es hat keine Nachfahren und kaeme nie in die Liste. */
+        add(sib);
+        if (sib.querySelectorAll) {
+          var found = sib.querySelectorAll("textarea, script, template");
+          for (var i = 0; i < found.length; i++) add(found[i]);
+        }
+        sib = sib.previousElementSibling;
+      }
+      node = node.parentElement;
+    }
+    var all = doc.querySelectorAll("textarea, script, template");
+    for (var j = 0; j < all.length; j++) add(all[j]);
+    return out;
+  }
+
+  function readEmbeddedData(root, doc) {
+    doc = doc || (typeof document !== "undefined" ? document : null);
+    if (!doc) return null;
+    var list = carriersBefore(root || doc.body, doc);
+    var problem = null;
+    for (var i = 0; i < list.length; i++) {
+      var raw = dataText(list[i]);
+      if (!raw || !raw.trim()) {
+        if (!problem) problem = "Der JSON-Block ist leer. Ein CMS hat beim Speichern den Inhalt verworfen.";
+        continue;
+      }
+      var parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (err) {
+        if (!problem) {
+          problem = "Der JSON-Block ist kein gültiges JSON (" + err.message +
+            "). Steht ein </textarea> darin, endet der Block dort vorzeitig.";
+        }
+        continue;
+      }
+      if (looksLikeData(parsed)) return parsed;
+    }
+    if (problem) {
+      if (typeof console !== "undefined") console.error("[Trendradar] " + problem);
+      return { __fatal: problem };
+    }
+    return null;
+  }
+
+  function mountInstance(root, doc, index) {
+    var data = readEmbeddedData(root, doc);
+    if (data && data.__fatal) {
+      root.innerHTML = renderErrorHTML([data.__fatal], []);
+      return null;
+    }
+    var layout = mount(root, data);
+    if (layout) guardAgainstReset(root, doc, index);
+    return layout;
   }
 
   function autoInit(doc) {
     doc = doc || (typeof document !== "undefined" ? document : null);
     if (!doc) return null;
-    var root = doc.querySelector(".tr-root");
-    if (!root) return null;
-    var data = readEmbeddedData(doc);
-    if (data && data.__parseError) {
-      root.innerHTML = renderErrorHTML(["Der JSON-Block \"trendradar-data\" ist nicht gültiges JSON: " + data.__parseError], []);
-      return null;
+    var roots = doc.querySelectorAll(".tr-root");
+    if (!roots.length) return null;
+    var first = null;
+    for (var i = 0; i < roots.length; i++) {
+      var out = mountInstance(roots[i], doc, i);
+      if (!first && out) first = out;
     }
-    return mount(root, data);
+    return first;
+  }
+
+  /* Manche CMS bauen den Block clientseitig neu auf: React setzt beim
+     Hydrieren den Inhalt von .tr-root zurück, danach steht die leere Box
+     da. Ein Beobachter auf genau diese zwei Stellen fängt das ab und baut
+     neu auf.
+
+     Begrenzt aus zwei Gründen. Erstens darf eine Seite, die dauernd neu
+     rendert, nicht in einer Schleife hängen: nach vier Neuaufbauten
+     innerhalb von zwei Sekunden wird aufgegeben und gewarnt. Zweitens
+     kostet der Beobachter auch im Erfolgsfall fast nichts, weil er nur die
+     eigene Box und deren Geschwister meldet. */
+  function guardAgainstReset(root, doc, index) {
+    var win = doc.defaultView;
+    if (!win || typeof win.MutationObserver !== "function") return;
+    if (root.__trGuard) return;
+
+    var state = { at: 0, runs: 0, timer: 0, gave: false };
+    var box = root;
+    root.__trGuard = state;
+    var mo = null;
+
+    function watch(el) {
+      if (mo) mo.disconnect();
+      mo = new win.MutationObserver(onChange);
+      if (el.parentNode) mo.observe(el.parentNode, { childList: true });
+      mo.observe(el, { childList: true });
+    }
+
+    function onChange() {
+      if (state.timer) return;
+      state.timer = win.setTimeout(function () { state.timer = 0; check(); }, 80);
+    }
+
+    function check() {
+      var now = Date.now();
+      if (now - state.at > 2000) state.runs = 0;
+      if (!box.isConnected) {
+        var again = doc.querySelectorAll(".tr-root")[index];
+        if (!again) return;
+        box = again;
+        again.__trGuard = state;
+        watch(again);
+      }
+      if (box.querySelector(".tr-stage svg")) return;
+      if (++state.runs > 4) {
+        if (!state.gave && typeof console !== "undefined") {
+          state.gave = true;
+          console.warn("[Trendradar] Der Container wird dauernd zurückgesetzt, nach 4 Neuaufbauten aufgegeben.");
+        }
+        return;
+      }
+      state.at = now;
+      mountInstance(box, doc, index);
+    }
+
+    watch(root);
   }
 
   if (typeof document !== "undefined") {
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { autoInit(); });
-    else autoInit();
+    function boot(doc) {
+      if (doc.querySelector(".tr-root")) { autoInit(doc); return; }
+      /* Der Block kann auch erst später kommen. Ein CMS, das seinen Inhalt
+         erst nach dem Laden rendert, liefert zur Startzeit kein .tr-root.
+         Dann wird kurz nachgesehen, statt still nichts zu tun. */
+      var win = doc.defaultView;
+      if (!win || !win.setInterval) return;
+      var tries = 0;
+      var timer = win.setInterval(function () {
+        if (doc.querySelector(".tr-root") || ++tries > 40) {
+          win.clearInterval(timer);
+          if (doc.querySelector(".tr-root")) autoInit(doc);
+        }
+      }, 150);
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { boot(document); });
+    else boot(document);
   }
 
   return {

@@ -55,7 +55,20 @@ const path = require("path");
 const vm = require("vm");
 
 const ENGINE_RE = /<script id="trendradar-engine">([\s\S]*?)<\/script>/;
-const DATA_RE = /<script type="application\/json" id="trendradar-data">([\s\S]*?)<\/script>/;
+/* Der Datentraeger ist ein verstecktes textarea (RCDATA: < > & bleiben
+   unveraendert). script mit application/json und template bleiben als
+   Alternativen zulaessig, die Reihenfolge hier ist die Auswahlreihenfolge.
+   Die textarea-Variante wird zuerst versucht, weil sie einen CMS-Schritt
+   ueberlebt, den script-Elemente nicht ueberleben. */
+const DATA_RES = [
+  /<textarea[^>]*\bid="trendradar-data"[^>]*>([\s\S]*?)<\/textarea>/i,
+  /<script[^>]*type="application\/json"[^>]*\bid="trendradar-data"[^>]*>([\s\S]*?)<\/script>/i,
+  /<template[^>]*\bid="trendradar-data"[^>]*>([\s\S]*?)<\/template>/i
+];
+const DATA_HINT = 'Kein Datenträger mit id "trendradar-data" in ' + "{FROM}" +
+  " gefunden. Erwartet wird <textarea id=\"trendradar-data\">…</textarea>, " +
+  "<script type=\"application/json\" id=\"trendradar-data\">…</script> oder " +
+  "<template id=\"trendradar-data\">…</template>.";
 
 /* ---------------------------------------------------------------- Argumente */
 
@@ -116,10 +129,22 @@ function loadEngine(src, from) {
 }
 
 function loadData(src, from) {
-  const m = DATA_RE.exec(src);
-  if (!m) fail('Kein <script type="application/json" id="trendradar-data"> in ' + from + " gefunden.");
+  let raw = null;
+  for (const re of DATA_RES) {
+    const m = re.exec(src);
+    if (m) { raw = m[1]; break; }
+  }
+  if (raw === null) fail(DATA_HINT.replace("{FROM}", from));
+  /* Innerhalb von RCDATA steht </textarea als Text, nicht als Schluss.
+     Genau das macht den textarea zum robusten Traeger - aber nur, solange
+     der Inhalt kein echtes </textarea enthaelt. Sonst waere der Block in
+     jedem Browser zu frueh zu Ende, und zwar ohne jede Fehlermeldung. */
+  if (/<\/textarea/i.test(raw)) {
+    fail('Der JSON-Block in ' + from + ' enthaelt ein </textarea und wuerde vorzeitig enden. ' +
+      "Schreibe stattdessen \\u003c/textarea.");
+  }
   try {
-    return JSON.parse(m[1]);
+    return JSON.parse(raw);
   } catch (err) {
     fail("Der JSON-Block in " + from + " ist ungültig: " + err.message);
   }
