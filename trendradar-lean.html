@@ -29,98 +29,10 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <html lang="de">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  
-
-
-
-
-
 
   html, body { height: 100%; }
   body { margin: 0; }
@@ -132,22 +44,12 @@
   .tr-btn {
     font: inherit; font-size: 0.9em; line-height: 1.4;
     padding: 6px 16px; cursor: pointer;
-    
-
-
-
-
-
     border: 1px solid var(--tr-control, #8D8D8D);
     background: transparent; color: inherit;
-    
-
     border-radius: 5px;
     transition: box-shadow .08s;
   }
   .tr-btn:hover { border-color: var(--tr-ink, #020E25); }
-  
-
   .tr-btn[aria-pressed="true"] {
     background: var(--tr-accent, #B30920);
     border-color: var(--tr-accent, #B30920);
@@ -155,21 +57,10 @@
   }
   .tr-btn:focus-visible { outline: 3px solid var(--tr-accent, #B30920); outline-offset: 2px; }
 
-  
-
-
   tr.tr-row:hover { background: var(--tr-row-hover, rgba(2,14,37,.05)); }
   tr.tr-row { position: relative; }
   tr.tr-row.is-link { cursor: pointer; }
   
-
-
-
-
-
-
-
-
   tr.tr-row.is-link a.tr-link::after { content: ""; position: absolute; inset: 0; }
   tr.tr-row.is-link:focus-within {
     background: var(--tr-row-hover, rgba(2,14,37,.05));
@@ -179,18 +70,9 @@
   tr.tr-row.is-link a.tr-link:focus-visible { outline: none; }
   .tr-blip { cursor: default; }
   .tr-blip-link { cursor: pointer; }
-  
-
-
   .tr-blip:hover { --tr-blip-stroke-width: var(--tr-blip-stroke-hover, 3.5px); }
   .tr-blip.is-hl  { --tr-blip-stroke-width: var(--tr-blip-stroke-hover, 3.5px); }
   a.tr-blip-link:hover text { text-decoration: underline; }
-  
-
-
-
-
-
   a.tr-blip-link:focus-visible { outline: 3px solid var(--tr-accent, #B30920); }
   a.tr-blip-link:focus-visible .tr-blip { --tr-blip-stroke-width: var(--tr-blip-stroke-hover, 3.5px); }
   a.tr-blip-link:focus-visible text { text-decoration: underline; }
@@ -200,37 +82,18 @@
   .tr-link:hover { text-decoration-thickness: 2px; color: var(--tr-accent, #B30920); }
 
 
-  
-
-
-
-
-
   @media (max-width: 575.98px) {
     .tr-col-name   { width: 21% !important; }
     .tr-col-sector { width: 96px !important; }
     .tr-col-desc   { width: auto !important; }
   }
 
-  
-
-
-
-
-
   @media (max-width: 575.98px) {
     .tr-table > thead {
       position: absolute; top: auto; left: -10000px;
       width: 1px; height: 1px; overflow: hidden;
     }
-    
-
-
-
-
-
-
-
+  
     .tr-table,
     .tr-table > colgroup,
     .tr-table > tbody,
@@ -246,31 +109,12 @@
       font-family: var(--tr-font, Roboto, Helvetica Neue, Arial, sans-serif);
       font-weight: 700; text-align: left;
     }
-    
-
-
     .tr-table > tbody > tr > td:last-child { border-bottom: 1px solid var(--tr-border, #595959); }
   }
-
-  
-
-
-
-
-
-
-
 
   @media (max-width: 575.98px) {
     .tr-sector-label { display: none; }
   }
-
-  
-
-
-
-
-
 
   @media print {
     .tr-toolbar { display: none !important; }
@@ -279,40 +123,16 @@
       display: block !important; padding: 0 !important;
       background: #fff !important;
     }
-    
-
-
     .tr-stage { max-height: 62vh !important; break-inside: avoid; page-break-inside: avoid; }
     .tr-legend-wrap { max-height: none !important; overflow: visible !important; display: block !important; }
-    
-
-
     .tr-ringblock { break-inside: avoid; page-break-inside: avoid; }
     .tr-row { break-inside: avoid; page-break-inside: avoid; }
     a.tr-link { text-decoration: none; }
-    
-
-
     .tr-table th, .tr-table td { padding: 4px 8px 4px 0 !important; }
   }
 </style>
 </head>
 <body>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <textarea class="tr-data" id="trendradar-data" hidden aria-hidden="true" readonly>
@@ -424,27 +244,18 @@
   </div>
 </noscript>
 
-
-
-
-
-
 <script id="trendradar-engine">
+
 const TrendRadar = (function () {
   "use strict";
 
   var TAU = Math.PI * 2;
-
-  
-
 
   var RING_FALLBACK = ["#1F8904", "#0B70EB", "#FF8500", "#E50000", "#0dcaf0", "#3D4657"];
 
   var THEME_DEFAULT = {
     background: "#F9FBFC", ink: "#020E25", muted: "#495057",
     grid: "#DEE2E6", sectorLine: "#ADB5BD", border: "#595959",
-    
-
     control: "#8D8D8D",
     accent: "#B30920", rowHover: "rgba(2,14,37,.05)",
     bandOpacity: 0.12, bandOpacityAlt: 0.06,
@@ -461,16 +272,7 @@ const TrendRadar = (function () {
   };
 
   
-
-
-
   var S = {
-    
-
-
-
-
-
     root: "margin:0;box-sizing:border-box;display:grid;gap:14px;padding:16px;height:100vh;height:100dvh;min-height:320px;" +
           "background:var(--tr-bg,#F9FBFC);color:var(--tr-ink,#020E25);" +
           "font-family:var(--tr-font,Roboto,Helvetica Neue,Arial,sans-serif);font-size:var(--tr-font-size,15px);" +
@@ -479,53 +281,22 @@ const TrendRadar = (function () {
     headMeta: "color:var(--tr-muted,#495057)",
     stage:
 "grid-area:stage;display:grid;place-items:center;min-height:0;min-width:0;min-height:200px;overflow:hidden",
-    
-
     svgFit: "display:block;width:100%;height:100%;min-width:0;min-height:0",
-    
-
-
     wrap: "grid-area:legend;min-height:0;max-height:38vh;max-height:38dvh;overflow:auto;display:flex;flex-direction:column;gap:10px",
     toolbar: "display:flex;gap:8px;align-items:center;justify-content:flex-end;flex:none",
-    
-
-
-
-
     legend: "display:flex;flex-direction:column;gap:30px",
     block: "display:block",
     ringHead: "display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:0 0 12px",
-    
-
-
-
-
-    
-
-
-
+  
     table: "width:100%;border-collapse:collapse;table-layout:fixed;vertical-align:top",
     th: "text-align:left;font-size:1em;font-weight:700;color:var(--tr-ink,#020E25);" +
         "padding:12px;background:transparent;border-top:0;border-bottom:2px solid var(--tr-border,#595959)",
-    
-
-
     td: "vertical-align:top;padding:12px;color:var(--tr-ink,#020E25);background:transparent;" +
         "border-bottom:1px solid var(--tr-border,#595959);line-height:1.45;overflow-wrap:anywhere;",
     
     tdNum: "vertical-align:top;padding:12px;color:var(--tr-ink,#020E25);background:transparent;" +
         "border-bottom:1px solid var(--tr-border,#595959);line-height:1.45;width:48px;",
-    
-
-
-
-
-
     muted: "color:var(--tr-muted,#495057)",
-    
-
-
-
     sr: "position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0",
     errBox: "margin:40px auto;max-width:64ch;padding:20px 24px;border:1px solid var(--tr-border,#595959);border-radius:5px;line-height:1.6"
   };
@@ -538,33 +309,19 @@ const TrendRadar = (function () {
   function isHex(c) { return typeof c === "string" && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(c.trim()); }
   function color(v, d) { return isHex(v) ? v.trim() : d; }
 
-  
-
-
-
-
   function fontStack(v, d) {
     var clean = str(v, "").replace(/["'\\;<>{}()]/g, " ").replace(/\s+/g, " ").trim();
     return clean || d;
   }
-
-  
 
   function cssValue(v, d) {
     var clean = str(v, "").replace(/["'\\;<>{}]/g, "").replace(/\s+/g, " ").trim();
     return clean || d;
   }
 
-  
-
-
-
   function fontVar(theme, head) {
     return "var(--tr-" + (head ? "head-" : "") + "font," + fontStack(head ? theme.headFont : theme.font, "sans-serif") + ")";
   }
-
-  
-
 
   function headTitleCss(theme) {
     return "margin:0;font-family:" + fontVar(theme, true) +
@@ -576,15 +333,6 @@ const TrendRadar = (function () {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
-
-  
-
-
-
-
-
-
-
 
   function inkOn(hex) {
     var m = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.exec(String(hex).trim());
@@ -688,8 +436,6 @@ const TrendRadar = (function () {
         sector: sector,
         description: str(e.description, ""),
         url: str(e.url, ""),
-        
-
         target: (e.target === "_self" || e.target === "_blank") ? e.target : null,
         inputIndex: out.entries.length,
         ringIndex: ring.index
@@ -709,10 +455,6 @@ const TrendRadar = (function () {
     out.theme = mergeDeep(THEME_DEFAULT, data.theme);
     out.theme.showSectorLabels = data.theme && data.theme.showSectorLabels !== undefined
       ? !!data.theme.showSectorLabels : true;
-    
-
-
-
     out.theme.font = fontStack(out.theme.font, THEME_DEFAULT.font);
     out.theme.headFont = fontStack(out.theme.headFont, THEME_DEFAULT.headFont);
     out.theme.rowHover = cssValue(out.theme.rowHover, THEME_DEFAULT.rowHover);
@@ -744,33 +486,12 @@ const TrendRadar = (function () {
 
   
 
-  
-
 
   function balancedSplit(n, L) {
     var base = Math.floor(n / L), extra = n % L, out = [];
     for (var j = 0; j < L; j++) out.push(base + (j < extra ? 1 : 0));
     return out;
   }
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   function chooseLanes(n, r0, r1, span, blip, gap) {
@@ -803,8 +524,6 @@ const TrendRadar = (function () {
     }
     if (best) return best;
 
-    
-
     var tight = evaluate(maxLanes);
     tight.feasible = false;
     return tight;
@@ -831,8 +550,6 @@ const TrendRadar = (function () {
     return out;
   }
 
-  
-
   function placeAll(norm, groups, R, blip, gap) {
     var nR = norm.rings.length;
     var nS = norm.sectors.length;
@@ -858,8 +575,6 @@ const TrendRadar = (function () {
     var worst = null;
     groups.forEach(function (g) {
       var band = bands[g.ring.index];
-      
-
       var span = g.sector ? delta : TAU;
       var pick = chooseLanes(g.entries.length, band.r0, band.r1, span, blip, gap);
       if (!pick.feasible) {
@@ -874,11 +589,6 @@ const TrendRadar = (function () {
         blips.push(p);
       });
     });
-
-    
-
-
-
 
     var minDist = Infinity;
     for (var i = 0; i < blips.length; i++) {
@@ -905,17 +615,9 @@ const TrendRadar = (function () {
     var blip = size.blip, gap = size.gap;
     var warnings = norm.warnings.slice();
 
-    
     var entries = norm.entries.slice().sort(function (a, b) {
     });
     entries.forEach(function (e, i) { e.number = i + 1; });
-
-    
-
-
-
-
-
 
     var groups = [];
     norm.rings.forEach(function (ring) {
@@ -926,7 +628,6 @@ const TrendRadar = (function () {
       }
       var buckets = norm.sectors.map(function (s) { return { ring: ring, sector: s, entries: [] }; });
       here.filter(function (e) { return !e.sector; }).forEach(function (e) {
-        
         var target = buckets.reduce(function (a, b) { return b.entries.length < a.entries.length ? b : a; });
         target.entries.push(e);
       });
@@ -936,7 +637,6 @@ const TrendRadar = (function () {
       buckets.forEach(function (b) { if (b.entries.length) groups.push(b); });
     });
 
-    
     var R = size.mode === "fixed" ? size.radius : size.min;
     var geo = null, guard = 0, overflow = false;
     while (guard++ < 40) {
@@ -953,9 +653,6 @@ const TrendRadar = (function () {
       R = next;
     }
     if (overflow) {
-      
-
-
       var needR = null;
       if (size.mode !== "fixed") {
         for (var probe = size.max * 1.02, steps = 0; probe < 4000 && steps < 220; probe *= 1.02, steps++) {
@@ -969,8 +666,6 @@ const TrendRadar = (function () {
       var need = needR
         ? "Ab Radius " + Math.ceil(needR) + " wäre alles überlappungsfrei – setze \"layout.size.max\" entsprechend."
         : "Auch bei einem sehr großen Radius reicht der Platz nicht.";
-      
-
       if (needR && needR > size.max * 2.2) {
         need += " Achtung: Bei so großem Radius sind die Blips nur noch " +
           Math.round(blip * 500 / needR) + " px breit (in einem 500 px hohen Rahmen). " +
@@ -1010,11 +705,7 @@ const TrendRadar = (function () {
       half = Math.max(half, Math.abs(l.x) + l.text.length * labelSize * 0.3, Math.abs(l.y) + labelSize * 0.7);
     });
     var W = 2 * half;
-    
-
     var vb = function (v) { return Math.round(v * 100) / 100; };
-
-    
 
     geo.blips.sort(function (a, b) { return a.entry.number - b.entry.number; });
 
@@ -1027,9 +718,6 @@ const TrendRadar = (function () {
       radius: R,
       pitch: geo.pitch,
       delta: geo.delta,
-      
-
-
       minDist: geo.minDist,
       bands: geo.bands,
       wedges: geo.wedges,
@@ -1075,10 +763,6 @@ const TrendRadar = (function () {
   function renderSVG(layout) {
     var t = layout.theme;
     var out = [];
-    
-
-
-
     out.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + layout.viewBox + '"' +
       ' preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + esc(describe(layout)) + '"' +
       ' style="' + S.svgFit + '">');
@@ -1144,12 +828,6 @@ const TrendRadar = (function () {
 
       if (b.entry.url) {
         var bt = linkTarget(b.entry, layout.links.target);
-        
-
-
-
-
-
         out.push('<a class="tr-blip-link" href="' + esc(b.entry.url) + '"' +
           (bt ? ' target="' + bt + '" rel="noopener noreferrer"' : "") +
           ' style="cursor:pointer" aria-label="' +
@@ -1171,21 +849,11 @@ const TrendRadar = (function () {
       ';border-radius:3px;width:12px;height:12px;flex:none;display:inline-block;transform:translateY(1px)"></span>';
   }
 
-  
-
-
   function nrBadge(ring, n) {
     return '<span class="tr-nr" style="display:inline-flex;align-items:center;justify-content:center;' +
       'width:22px;height:22px;border-radius:50%;background:' + ring.color + ';color:' + inkOn(ring.color) +
       '">' + esc(n) + "</span>";
   }
-
-  
-
-
-
-
-
 
   function linkTarget(e, def) {
     if (!e.url || e.url.charAt(0) === "#") return null;
@@ -1193,17 +861,6 @@ const TrendRadar = (function () {
   }
 
   
-
-
-
-
-
-
-
-
-
-
-
   function rowTitle(e) {
     return e.url ? e.url : "";
   }
@@ -1217,9 +874,6 @@ const TrendRadar = (function () {
       (t ? ' target="' + t + '" rel="noopener noreferrer"' : "") + ">" + esc(e.name) + "</a>";
   }
 
-  
-
-
   function descCell(e) {
     if (!e.description) return '<td data-label="Beschreibung" style="' + S.td + '">–</td>';
     return '<td data-label="Beschreibung" style="' + S.td + '"><div>' +
@@ -1229,13 +883,6 @@ const TrendRadar = (function () {
   
 
   
-
-
-
-
-
-
-
   var COLS = {
     num:    { w: "48px", head: "Nr" },
     name:   { w: "28%",  head: "Trend" },
@@ -1246,15 +893,9 @@ const TrendRadar = (function () {
 
   function colgroup(keys) {
     return "<colgroup>" + keys.map(function (k) {
-      
-
-
       return '<col class="tr-col-' + k + '" style="width:' + COLS[k].w + '">';
     }).join("") + "</colgroup>";
   }
-
-  
-
 
   function headRow(keys) {
     return "<tr>" + keys.map(function (k) {
@@ -1262,15 +903,9 @@ const TrendRadar = (function () {
     }).join("") + "</tr>";
   }
 
-  
-
-
-
   function tabelleCaption(text) {
     return '<caption style="' + S.sr + '">' + esc(text) + "</caption>";
   }
-
-  
 
   function legendColumns(hasSector, withRing) {
     return ["num", "name"]
@@ -1278,11 +913,6 @@ const TrendRadar = (function () {
       .concat(hasSector ? ["sector"] : [])
       .concat(["desc"]);
   }
-
-  
-
-
-
 
   function legendRow(b, hasSector, withRing, target) {
     var e = b.entry;
@@ -1324,11 +954,6 @@ const TrendRadar = (function () {
           '<section class="tr-ringblock" data-ring="' + esc(band.ring.id) + '"' +
             ' aria-labelledby="tr-ringname-' + band.index + '" style="' + S.block + '">' +
             '<div class="tr-ringhead" style="' + S.ringHead + '">' + chip("", band.ring) +
-            
-
-
-
-
             '<h2 class="tr-ringname" id="tr-ringname-' + band.index + '" style="font-family:' + fontVar(layout.theme, true) +
             ';font-weight:700;font-size:1em;margin:0">' + esc(band.ring.name) + "</h2>" +
             '<span class="tr-count" style="' + S.muted + ';font-size:0.85em">' + members.length + " Trends</span>" +
@@ -1393,9 +1018,6 @@ const TrendRadar = (function () {
       "--tr-control": theme.control,
       "--tr-accent": theme.accent,
       "--tr-row-hover": theme.rowHover,
-      
-
-
       "--tr-font": theme.font,
       "--tr-head-font": theme.headFont,
       "--tr-font-size": theme.fontSize + "px",
@@ -1403,9 +1025,6 @@ const TrendRadar = (function () {
       "--tr-blip-stroke-width": theme.blipStrokeWidth + "px"
     };
   }
-
-  
-
 
   function themeVarText(theme) {
     var v = cssVars(theme), out = "";
@@ -1430,9 +1049,6 @@ const TrendRadar = (function () {
 
     var layout = computeLayout(norm);
 
-    
-
-
     if (doc && doc.body && layout.theme && layout.theme.background) {
       doc.body.style.background = layout.theme.background;
     }
@@ -1446,9 +1062,6 @@ const TrendRadar = (function () {
     var legendWrap = root.querySelector(".tr-legend-wrap");
     var toolbar = root.querySelector(".tr-toolbar");
     var legendBox = root.querySelector(".tr-legend");
-
-    
-
 
     if (head) head.style.cssText = S.head;
     if (stage) stage.style.cssText = S.stage;
@@ -1498,40 +1111,17 @@ const TrendRadar = (function () {
       });
     }
 
-    
-
-
-
-
-
+  
     paintLegend();
-
-    
-
 
     root.style.cssText = S.root + "border-radius:" + norm.theme.radius + "px";
     if (legendWrap) legendWrap.style.cssText = S.wrap;
 
-    
-
     var vars = cssVars(norm.theme);
     Object.keys(vars).forEach(function (k) { root.style.setProperty(k, vars[k]); });
 
-    
-
-
-
-
-
-
-
-
-
-
-
     var ZIEL_LABEL = 13, ZIEL_NR = 11.4, ZIEL_BLIP = 15, MIN_LABEL = 9;
 
-    
     function blipBoxes() {
       var out = [];
       Array.prototype.forEach.call(stage.querySelectorAll(".tr-blip circle"), function (c) {
@@ -1552,16 +1142,6 @@ const TrendRadar = (function () {
       return true;
     }
 
-    
-
-
-
-
-
-
-
-
-
     function viewBoxFuerLabels(svg) {
       var vb = svg.viewBox.baseVal;
       if (!vb || !vb.width) return false;
@@ -1579,8 +1159,6 @@ const TrendRadar = (function () {
         nY = Math.max(nY, o, u);
       });
       if (!zuKlein) return false;
-      
-
       nX += 6; nY += 6;
       svg.setAttribute("viewBox",
         (mitteX - nX).toFixed(2) + " " + (mitteY - nY).toFixed(2) + " " +
@@ -1597,12 +1175,6 @@ const TrendRadar = (function () {
       if (Math.abs(k - (fitText.last || 0)) < 0.02) return;
       fitText.last = k;
 
-      
-
-
-
-
-
       var dUser = layout.size.blip;
       var istPx = dUser / k;
       var maxF = layout.minDist > 0 ? layout.minDist / dUser : 1;
@@ -1615,8 +1187,6 @@ const TrendRadar = (function () {
           if (!c.getAttribute("data-r")) c.setAttribute("data-r", c.getAttribute("r"));
           c.setAttribute("r", (parseFloat(c.getAttribute("data-r")) * f).toFixed(2));
         });
-        
-
         Array.prototype.forEach.call(stage.querySelectorAll(".tr-sectorline"), function (l) {
           if (!l.getAttribute("data-x1")) {
             l.setAttribute("data-x1", l.getAttribute("x1"));
@@ -1627,20 +1197,11 @@ const TrendRadar = (function () {
         });
       }
 
-      
-
-
-
       var innenPx = Math.max(0, (dUser * f) / k - 4);
       var nrPx = Math.min(ZIEL_NR, innenPx / 0.6);
       Array.prototype.forEach.call(stage.querySelectorAll(".tr-blip-nr"), function (t) {
         t.style.fontSize = (nrPx * k).toFixed(2) + "px";
       });
-
-      
-
-
-
 
       var boxes = blipBoxes();
       Array.prototype.forEach.call(stage.querySelectorAll(".tr-sector-label"), function (t) {
@@ -1654,17 +1215,8 @@ const TrendRadar = (function () {
         if (!labelFits(t, boxes)) t.style.display = "none";
       });
 
-      
-
-
-
       root.style.setProperty("--tr-blip-stroke-width", (1.5 * k).toFixed(2) + "px");
       root.style.setProperty("--tr-blip-stroke-hover", (3.5 * k).toFixed(2) + "px");
-
-      
-
-
-
 
       if (viewBoxFuerLabels(svg)) {
         fitText.durchlaeufe = (fitText.durchlaeufe || 0) + 1;
@@ -1679,15 +1231,10 @@ const TrendRadar = (function () {
 
     fitText();
     if (win && typeof win.ResizeObserver === "function" && stage) {
-      
-
       var ro = new win.ResizeObserver(fitText);
       ro.observe(stage);
     }
     if (win && win.addEventListener) {
-      
-
-
       win.addEventListener("resize", fitText);
     }
 
@@ -1696,13 +1243,7 @@ const TrendRadar = (function () {
 
   
 
-
-
-
   
-
-
-
   function isCarrier(el) {
     if (!el) return false;
     var tag = el.tagName;
@@ -1721,15 +1262,9 @@ const TrendRadar = (function () {
     return el.textContent || "";
   }
 
-  
-
   function looksLikeData(d) {
     return !!(d && typeof d === "object" && !Array.isArray(d) && (d.rings || d.entries || d.schemaVersion));
   }
-
-  
-
-
 
   function carriersBefore(root, doc) {
     var out = [];
@@ -1738,9 +1273,6 @@ const TrendRadar = (function () {
     while (node && node !== doc.documentElement) {
       var sib = node.previousElementSibling;
       while (sib) {
-        
-
-
         add(sib);
         if (sib.querySelectorAll) {
           var found = sib.querySelectorAll("textarea, script, template");
@@ -1809,16 +1341,6 @@ const TrendRadar = (function () {
     return first;
   }
 
-  
-
-
-
-
-
-
-
-
-
   function guardAgainstReset(root, doc, index) {
     var win = doc.defaultView;
     if (!win || typeof win.MutationObserver !== "function") return;
@@ -1869,9 +1391,6 @@ const TrendRadar = (function () {
   if (typeof document !== "undefined") {
     function boot(doc) {
       if (doc.querySelector(".tr-root")) { autoInit(doc); return; }
-      
-
-
       var win = doc.defaultView;
       if (!win || !win.setInterval) return;
       var tries = 0;

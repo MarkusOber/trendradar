@@ -1,52 +1,9 @@
 #!/usr/bin/env node
-/* ═══════════════════════════════════════════════════════════════════════
-   build.js — erzeugt die statische Variante eines Trendradars.
+/* Erzeugt aus trendradar.html eine statische Datei ohne script und ohne style,
+   oder eine eigenstaendige SVG-Datei. Ohne Abhaengigkeiten.
 
-  (node build.js, kein npm, keine Abhängigkeiten, kein Netzwerk.)
-
-   Die Quelle der Wahrheit bleibt trendradar.html samt JSON-Block. Dieses
-   Skript führt den Engine-Block aus der HTML-Datei in einer Node-vm aus und
-   rendert daraus eine fertige Datei, die KEIN JavaScript und KEIN <style>
-   benötigt — nur noch Markup mit Inline-Styles.
-
-   Deshalb können interaktive und statische Variante nicht auseinanderlaufen:
-   beide benutzen exakt dieselben Funktionen.
-
-   ───────────────────────────────────────────────────────────────────────
-   AUFRUF
-   ───────────────────────────────────────────────────────────────────────
-     node build.js <trendradar.html> [-o <out.html>] [Optionen]
-
-   Optionen
-     -o, --out <datei>   Zieldatei (Standard: <eingabe> ohne .html + .static.html)
-         --svg           Nur den Radar als eigenständige SVG-Datei
-         --no-legend     Keine Legende (nur mit --svg sinnvoll)
-      --mode <m>      Legendenform: grouped (Standard) | flat
-      --width <px>    Feste Breite in px für --svg (Standard: 2 × Radius + 40)
-         --quiet         Nur Fehler ausgeben
-     -h, --help          Diese Hilfe
-
-   ───────────────────────────────────────────────────────────────────────
-   BEISPIELE
-   ───────────────────────────────────────────────────────────────────────
-     node build.js trendradar.html -o dist/trendradar-intranet.html
-     node build.js trendradar.html --svg -o dist/radar.svg
-     node build.js trendradar.html --svg --no-legend --width 1600 -o slides/radar.svg
-
-   ───────────────────────────────────────────────────────────────────────
-   WAS DIE STATISCHE VARIANTE ANDERS MACHT
-   ───────────────────────────────────────────────────────────────────────
-   Ohne Browser lässt sich das Seitenlayout nicht messen. Hier steht es
-   deshalb fest: die Legende liegt immer unter dem Radar und nimmt höchstens
-   38 % der Rahmenhöhe ein, darunter scrollt sie. Der Radar behält damit in
-   jedem Rahmen den größeren Anteil – es gibt nichts zu konfigurieren.
-
-      · Es gibt keine Druck-Formatierung. Die interaktive Variante druckt mit
-        Seitenumbruch und ohne Hintergründe; für PDFs ist --svg die bessere
-        Wahl, weil dort die Bemaßung feststeht.
-
-   Der reine Radar ist davon nicht betroffen: --svg ist maßstabsgetreu.
-   ═══════════════════════════════════════════════════════════════════════ */
+     node build.js trendradar.html -o radar.html
+     node build.js trendradar.html --svg -o radar.svg */
 
 "use strict";
 
@@ -55,11 +12,6 @@ const path = require("path");
 const vm = require("vm");
 
 const ENGINE_RE = /<script id="trendradar-engine">([\s\S]*?)<\/script>/;
-/* Der Datentraeger ist ein verstecktes textarea (RCDATA: < > & bleiben
-   unveraendert). script mit application/json und template bleiben als
-   Alternativen zulaessig, die Reihenfolge hier ist die Auswahlreihenfolge.
-   Die textarea-Variante wird zuerst versucht, weil sie einen CMS-Schritt
-   ueberlebt, den script-Elemente nicht ueberleben. */
 const DATA_RES = [
   /<textarea[^>]*\bid="trendradar-data"[^>]*>([\s\S]*?)<\/textarea>/i,
   /<script[^>]*type="application\/json"[^>]*\bid="trendradar-data"[^>]*>([\s\S]*?)<\/script>/i,
@@ -135,10 +87,6 @@ function loadData(src, from) {
     if (m) { raw = m[1]; break; }
   }
   if (raw === null) fail(DATA_HINT.replace("{FROM}", from));
-  /* Innerhalb von RCDATA steht </textarea als Text, nicht als Schluss.
-     Genau das macht den textarea zum robusten Traeger - aber nur, solange
-     der Inhalt kein echtes </textarea enthaelt. Sonst waere der Block in
-     jedem Browser zu frueh zu Ende, und zwar ohne jede Fehlermeldung. */
   if (/<\/textarea/i.test(raw)) {
     fail('Der JSON-Block in ' + from + ' enthaelt ein </textarea und wuerde vorzeitig enden. ' +
       "Schreibe stattdessen \\u003c/textarea.");
@@ -187,10 +135,7 @@ function buildHtml(TR, layout, mode) {
 
 function buildSvg(TR, layout, width) {
   const svg = TR.renderSVG(layout);
-  /* Für die eigenständige SVG-Datei sind width/height maßgeblich. Das
-     Füll-Stylesheet des eingebetteten Radars (position:absolute;inset:0)
-     wird deshalb durch feste Pixelmaße ersetzt – andernfalls wäre die Datei
-     unsichtbar. */
+  /* Bei der SVG-Datei sind width/height massgeblich. */
   const vb = layout.viewBox.split(" ");
   const w = width || Math.round(2 * (layout.radius + 10));
   const h = Math.round((w * parseFloat(vb[3])) / parseFloat(vb[2]));
@@ -202,8 +147,6 @@ function buildSvg(TR, layout, width) {
 
 /* ------------------------------------------------------- Selbstkontrolle */
 
-/* Das ganze Versprechen der statischen Variante ist "kein JavaScript, kein
-   <style>". Das wird nach dem Bau nachgeprüft, nicht angenommen. */
 function selfCheck(html, opts) {
   const problems = [];
   if (/<\s*script/i.test(html)) problems.push("enthält noch ein <script>");
@@ -259,9 +202,6 @@ function main() {
   log(opts, "  Radius    " + layout.radius.toFixed(1) +
     (opts.svg ? "" : "  ·  Legende: " + (opts.legend ? mode + ", unter dem Radar" : "keine")));
   log(opts, "  Enthält   " + (opts.svg ? "nur SVG" : "kein <script>, kein <style>") + (layout.overflow ? "  ·  ÜBERFÜLLT" : ""));
-  /* Die Legende steht fest unter dem Radar und nimmt hoechstens 38 % der
-     Rahmenhoehe ein; darunter scrollt sie. Der Radar behält damit immer den
-     groesseren Anteil - unabhaengig davon, wie breit der Einbau ist. */
   if (!opts.svg && opts.legend) {
     log(opts, "  Hinweis   Die Legende steht unter dem Radar und scrollt intern.");
     log(opts, "            Der Rahmen braucht etwas Hoehe: unter ca. 420 px wird");

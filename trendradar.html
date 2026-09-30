@@ -1,126 +1,38 @@
 <!doctype html>
 <!--
-  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─
   TRENDRADAR
-  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─
 
-  1. Kopieren. Fertig. Die Datei laeuft per Doppelklick, per <iframe src> und
-     auf jedem statischen Hosting. Kein Server, kein Build, keine Abhaengigkeit.
+  Kopieren und im Browser oeffnen. Ohne Server, Build und ohne Abhaengigkeit.
 
-  2. Alles Anpassbare steht im JSON-Block weiter unten, in einem
-     versteckten textarea mit der id "trendradar-data". Nur diesen Block
-     aendern - der Rest der Datei bleibt unangetastet. Zulaessig sind auch
-     ein template oder ein script mit application/json, falls die Datei
-     maschinell erzeugt wird.
+  Anpassbar ist ausschliesslich der JSON-Block mit der id "trendradar-data".
+  Die Engine mit der id "trendradar-engine" nicht aendern.
 
-  2a. Der Block steht bewusst in einem textarea statt in einem script mit
-     application/json. CMS verwerfen beim Speichern gern den Inhalt von
-     script-Elementen mit unbekanntem Typ und lassen das Tag leer
-     zurueck. Ein textarea ueberlebt das, und weil er RCDATA ist, muessen
-     < > und & beim Schreiben nicht escaped werden.
+  Ohne JavaScript, etwa in einem iFrame ohne allow-scripts oder in einem CMS,
+  das Skripte entfernt:
 
-  3. Fuer eine Umgebung ohne JavaScript (z. B. iFrame mit sandbox ohne
-     allow-scripts, oder ein CMS, das <script> entfernt):
+      node build.js trendradar.html -o radar.html
 
-        node build.js trendradar.html -o radar.html
+  SCHEMA, Pflichtfelder mit *
 
-     Das Ergebnis ist eine statische Datei ohne einen einzigen <script> und
-     ohne <style>. Beide Wege nutzen exakt dieselbe Layout-Engine.
-
-  4. Die Datei fuellt ihren Rahmen aus: sie ist so hoch wie das Sichtfenster,
-     der Radar nimmt den quadratischen Platz darin ein, die Legende steht
-     darunter und scrollt intern. Die Seite selbst scrollt nicht. Im <iframe>
-     also eine Hoehe mitgeben, sonst stuetzt sich der Inhalt auf die Hoehe
-     des iframes:
-
-        <iframe src="radar.html" style="width:100%;height:720px;border:0"></iframe>
-
-  ─  ─ SCHEMA (nur Pflichtfelder sind markiert, alles andere ist optional)
-  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─
-    "schemaVersion": 1,          // nur hochzaehlen bei NEUEN (additiven) Feldern
-    "subtitle":    "Optionaler Untertitel.",
-    "date":        "2026-09-29",
-
-    "links":  { "target": "_blank" },     // "_blank" | "_self"  = Vorgabe
-
-    "layout": {
-      "legend": { "mode": "grouped" },   // "grouped" | "flat"  (umschaltbar)
-                                         // Die Legende liegt immer unter dem
-                                         // Radar und scrollt fuer sich.
-      "size":   { "mode": "auto",         // "auto" = waechst bis alles passt
-                  "min": 380,             // "fixed" = Radius fest
-                  "max": 660,             // Obergrenze für "auto"
-                  "radius": 480,          // Radius für "fixed"
-                  "blip": 22,             // Blip-Durchmesser in SVG-Einheiten
-                  "gap": 4 }              // Mindestabstand zwischen Blips
-    },
-
-    "theme": {                 // jede Farbe auch als CSS-Variable überschreibbar
-      // Die Vorgabefarben folgen einem festen, schriftlich hinterlegten
-      // Farbset: Navy #020E25 auf #F9FBFC, Rot #B30920 nur
-      // für Aktionen, harte Linien in den Graustufen der Palette.
-      "background": "#F9FBFC", "ink": "#020E25", "muted": "#495057",
-      "grid": "#DEE2E6", "sectorLine": "#ADB5BD", "border": "#595959",
-      "control": "#8D8D8D",  // Kontur der Schalter, >= 3:1 gegen die Flaeche
-      "accent": "#B30920",     // Aktionen, Fokusring, aktiver Schalter
-      // Schriftstapel ohne Webfont: Roboto/Roboto Condensed sind auf vielen
-      // Systemen vorhanden, sonst greift Helvetica/Arial. Bewusst kein @font-face
-      // und kein <link> – die Datei muss auch offline und im iFrame stimmen.
-      "font": "Roboto, Helvetica Neue, Arial, sans-serif",
-      "headFont": "Roboto Condensed, Roboto, Arial Narrow, Arial, sans-serif",
-      "fontSize": 15, "headSize": 24,
-      "sectorLabelSize": 13, "showSectorLabels": true
-    },
-
-    "rings":   [               // 3-6 Ringe, REIHENFOLGE = Zentrum -> Rand
-      { "id": "adopt", "name": "ADOPT", "color": "#1F8904",
-        "description": "Wird breit genutzt, wir investieren langfristig." }
-    ],
-
-    "sectors": [               // optional. [] = nur Ringe, ohne Tortenstuecke
-      { "id": "tech", "name": "Technologie" }
-    ],
-
-    "entries": [               // 10-40 Trends
-      { "name": "Pflicht",                    // Pflicht
-        "ring": "adopt",                     // Pflicht: muss eine ring-id sein
-        "sector": "tech",                    // optional: muss eine sector-id sein
-        "description": "Optional",           // optional
-        "target": "_self",                   // optional: "_blank" | "_self"
-        "url": "https://example.com/trend"   // optional
-      }
-    ]
-  }
-  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─
-
-  ─  ─ REGELN, DIE DIE ENGINE GARANTIERT (man muss sich nicht darum kümmern)
-  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─
-  · Trends werden global 1..N nummeriert, Sortierung innen -> aussen, darin
-    die Reihenfolge im JSON. Die Nummer steht im Blip und führt zur Legende.
-  · Ein Trend OHNE "sector" verteilt sich gleichmaessig über den ganzen Ring.
-    Reicht der Platz dort nicht, wandert er in den am wenigsten belegten
-    Sektor, in der Legende steht er dann unter "–". Passt er nirgends, meldet
-    die Engine das über eine sichtbare Meldung und in der Browser-Konsole.
-    Die Seite bleibt immer benutzbar.
-  · Die Verteilung ist deterministisch: gleiche Daten => gleiche Pixel.
-
-  ─  ─ CSS-VARIABLEN (in einer eigenen <style>-Zeile überschreibbar)
-  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─  ─
-  --tr-bg --tr-ink --tr-muted --tr-grid --tr-sector-line --tr-border
-  --tr-control
-  --tr-accent --tr-row-hover --tr-font --tr-head-font --tr-font-size
-  --tr-blip-stroke --tr-blip-stroke-width
+    schemaVersion      nur bei neuen Feldern hochzaehlen
+    subtitle, date     Text
+    links.target       "_blank" (Vorgabe) oder "_self"
+    layout.legend.mode "grouped" oder "flat"
+    layout.size        mode "auto" oder "fixed", dann min, max, radius, blip, gap
+    theme              background, ink, muted, grid, sectorLine, border, control,
+                       accent, font, headFont, fontSize, headSize,
+                       sectorLabelSize, showSectorLabels
+    rings*             3 bis 6, Reihenfolge Zentrum nach Rand, Felder id, name, color
+    sectors            id, name
+    entries*           10 bis 40, Felder name, ring, sector, description, target, url
+    entries[].ring     muss eine id aus rings sein
+    entries[].sector   muss eine id aus sectors sein
+    entries[].target   "_blank" oder "_self"
 -->
 <html lang="de">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  /* ------------------------------------------------------------------
-     Dieser Block traegt ausschliesslich STRUKTUR, INTERAKTION und PRINT.
-     Farben, Schriftgroessen und Abstaende stehen als Inline-Styles direkt
-     an den Elementen - deshalb funktioniert die statische Variante
-     (build.js) auch dann, wenn dieses <style> gar nicht vorhanden ist.
-     ------------------------------------------------------------------ */
 
   html, body { height: 100%; }
   body { margin: 0; }
@@ -132,22 +44,12 @@
   .tr-btn {
     font: inherit; font-size: 0.9em; line-height: 1.4;
     padding: 6px 16px; cursor: pointer;
-    /* Der Umriss eines Schalters muss sich nach WCAG 1.4.11 mit mindestens
-       3:1 von der umgebenden Flaeche abheben. Der inaktive Schalter hat
-       absichtlich keine Fuellung, deshalb definiert allein diese Linie das
-       Bedienelement: --tr-grid (#DEE2E6) lag hier bei 1.25:1 und war damit
-       kein gueltiger Kontur. --tr-control ist der kleinste neutrale Ton,
-       der die Grenze mit Marge reisst. */
     border: 1px solid var(--tr-control, #8D8D8D);
     background: transparent; color: inherit;
-    /* Harte, kleine Radien statt Pillen: 5px Radius und 6px mal 16px
-       Innenabstand sind die Vorgabe fuer Schalter in dieser Oberflaeche. */
     border-radius: 5px;
     transition: box-shadow .08s;
   }
   .tr-btn:hover { border-color: var(--tr-ink, #020E25); }
-  /* Aktiv = Primäraktion in Rot, inaktiv = ruhiger Umriss. So bleibt der
-     Zustand auch ohne Farbe am Rahmen und an der Schrift erkennbar. */
   .tr-btn[aria-pressed="true"] {
     background: var(--tr-accent, #B30920);
     border-color: var(--tr-accent, #B30920);
@@ -155,21 +57,10 @@
   }
   .tr-btn:focus-visible { outline: 3px solid var(--tr-accent, #B30920); outline-offset: 2px; }
 
-  /* Blip-Highlight: die Regel überschreibt nur eine CSS-Variable, die im
-     Inline-Style als var(--tr-blip-stroke-width, ⬦) referenziert wird.
-     Deshalb braucht es hier kein !important. */
   tr.tr-row:hover { background: var(--tr-row-hover, rgba(2,14,37,.05)); }
   tr.tr-row { position: relative; }
   tr.tr-row.is-link { cursor: pointer; }
-  /* Die ganze Zeile ist das Klickziel, aber der echte <a> bleibt im
-     Trendnamen: nur seine ::after-Flaeche wird ueber die Zeile gespannt.
-     So bleiben Tastaturbedienung, "Link in neuem Tab oeffnen" und
-     Screenreader-Semantik erhalten, statt die Zeile umzubauen.
-     Bewusst im <style>-Block und damit nur in der interaktiven Variante:
-     eine Pseudo-Element-Regel laesst sich nicht inline setzen, und die
-     statische Ausgabe kommt ohne <style> aus. Dort bleibt der Link auf
-     den Trendnamen beschraenkt - so wie dort auch kein Hover und keine
-     Tastaturhervorhebung stattfindet. */
+  /* Die Zeile ist das Klickziel, der echte <a> bleibt im Trendnamen. */
   tr.tr-row.is-link a.tr-link::after { content: ""; position: absolute; inset: 0; }
   tr.tr-row.is-link:focus-within {
     background: var(--tr-row-hover, rgba(2,14,37,.05));
@@ -179,18 +70,9 @@
   tr.tr-row.is-link a.tr-link:focus-visible { outline: none; }
   .tr-blip { cursor: default; }
   .tr-blip-link { cursor: pointer; }
-  /* Die Linienstaerke der Punkte wird vom Browser in Nutzereinheiten
-     nachgefuehrt, sonst schrumpft sie auf dem Handy unter ein Bildschirmpixel.
-     Auch die Hervorhebung laeuft deshalb ueber eine Variable. */
   .tr-blip:hover { --tr-blip-stroke-width: var(--tr-blip-stroke-hover, 3.5px); }
   .tr-blip.is-hl  { --tr-blip-stroke-width: var(--tr-blip-stroke-hover, 3.5px); }
   a.tr-blip-link:hover text { text-decoration: underline; }
-  /* Die Blip-Links sind SVG-Elemente und bekamen ohne eigene Regel den
-     Browser-Standardring, waehrend Schalter und Tabellenzeilen den gestalteten
-     roten Ring zeigen. Der Fokuspunkt war damit sichtbar, aber ohne ein
-     wiedererkennbares Merkmal - und ohne Kontrastgarantie, weil "auto" die
-     Farbe des Browsers ist. Dieselbe Hervorhebung wie beim Ueberfahren:
-     kraeftigerer Punkt plus roter Ring. */
   a.tr-blip-link:focus-visible { outline: 3px solid var(--tr-accent, #B30920); }
   a.tr-blip-link:focus-visible .tr-blip { --tr-blip-stroke-width: var(--tr-blip-stroke-hover, 3.5px); }
   a.tr-blip-link:focus-visible text { text-decoration: underline; }
@@ -200,37 +82,18 @@
   .tr-link:hover { text-decoration-thickness: 2px; color: var(--tr-accent, #B30920); }
 
 
-  /* Schmale Rahmen: die Beschreibungsspalte darf nicht auf einen nutzlosen
-     Rest zusammenschrumpfen, weil sie als einzige keinen festen Anteil
-     bekommt. Also bekommen die Spalten mit kurzen Beschriftungen eine
-     Mindestbreite in Pixeln; den Rest nimmt die Beschreibung.
-     !important schlaegt hier die Inline-Breite am <col>, die fuer die
-     statische Variante ohne <style> noetig bleibt. */
   @media (max-width: 575.98px) {
     .tr-col-name   { width: 21% !important; }
     .tr-col-sector { width: 96px !important; }
     .tr-col-desc   { width: auto !important; }
   }
 
-  /* Gestapelte Tabelle auf schmalen Rahmen: die Kopfzeile wandert aus dem
-     Sichtfeld, jede Zelle wird ein Paar aus Bezeichnung und Wert, und die
-     Bezeichnung kommt aus dem data-label der Zelle.
-     Bewusst nur im <style>-Block: ein ::before mit content:attr() laesst
-     sich nicht inline setzen. Die statische Ausgabe bleibt deshalb eine
-     normale Tabelle mit Kopfzeile - dort ist sie nicht gestapelt. */
   @media (max-width: 575.98px) {
     .tr-table > thead {
       position: absolute; top: auto; left: -10000px;
       width: 1px; height: 1px; overflow: hidden;
     }
-    /* Die gestapelte Zeile ist gar keine Tabelle mehr. Solange <table> das
-       Tabellenlayout aufbaut, greifen table-layout:fixed und die Breiten aus
-       dem <colgroup> weiterhin - aber die Zellen sind inzwischen Flexboxen
-       und fallen aus dem Raster. Es blieb nur noch die Inline-Breite der
-       Nummerenspalte: alle fuenf Spalten wurden 48px breit, jeder Wert
-       brach nach einem Zeichen um und eine Zeile wurde ueber 1200px hoch.
-       Deshalb werden Tabelle, Zeilen und Zellen hier auf Block gestellt;
-       ab da gilt die Inline-Breite "48px" fuer die erste Zelle nicht mehr. */
+  /* Gestapelt: table, colgroup, tbody und tr brauchen display:block. */
     .tr-table,
     .tr-table > colgroup,
     .tr-table > tbody,
@@ -246,32 +109,13 @@
       font-family: var(--tr-font, Roboto, Helvetica Neue, Arial, sans-serif);
       font-weight: 700; text-align: left;
     }
-    /* Im gestapelten Zustand bekommen die Wertpaare keine Linien. Eine
-       Haarlinie unter dem letzten Wertpaar haelt den Block trotzdem zusammen,
-       wenn eine Beschreibung laenger ist als der Rest der Zeile. */
     .tr-table > tbody > tr > td:last-child { border-bottom: 1px solid var(--tr-border, #595959); }
   }
 
-  /* Die Sektorbeschriftungen am Radarrand passen neben den Ring nicht auf
-     das Handy - das ist keine Geschmacksfrage, sondern Arithmetik. Bei 360px
-     ist der Aussenring 304px breit, die Buehne hat 328px, und ein Label
-     "Technologie" in lesbarer Groesse ist 154px breit. Am Rand waeren nur
-     12px Luft; selbst weit innen bliebe das Label quer ueber dem Ring.
-     Die Grafik blendet sie deshalb auf schmalen Rahmen aus und gibt den
-     Raum den Punkten, deren Nummern man mit der Legende abgleicht. Die
-     Sektornamen gehen nicht verloren: sie stehen in der Spalte "Sektor"
-     jeder Tabellenzeile und im Stapelmodus als Beschriftung der Zelle. */
   @media (max-width: 575.98px) {
     .tr-sector-label { display: none; }
   }
 
-  /* Druck.
-
-     !important ist hier keine Faelle von Unsauberkeit, sondern Notwendigkeit:
-     Raster, Hoehe und Farben stehen als Inline-Styles an den Elementen, und
-     ein Inline-Style schlaegt jede normale Regel. Ohne !important bliebe beim
-     Drucken das Bildschirmraster aktiv (height:100dvh, display:grid) und die
-     Legende wuerde abgeschnitten statt auf Folie zwei gedruckt. */
   @media print {
     .tr-toolbar { display: none !important; }
     .tr-root {
@@ -279,42 +123,18 @@
       display: block !important; padding: 0 !important;
       background: #fff !important;
     }
-    /* Legende steht unter dem Radar. Wenn der Radar fast die ganze Seite
-       einnimmt, beginnt die Legende zwangslaeufig auf Folie zwei. 62vh lassen
-       genug Platz, damit die Legende noch auf Folie eins beginnen kann. */
     .tr-stage { max-height: 62vh !important; break-inside: avoid; page-break-inside: avoid; }
     .tr-legend-wrap { max-height: none !important; overflow: visible !important; display: block !important; }
-    /* Der Abstand zwischen den Ringbloecken kommt schon aus dem Raster der
-       Legende (gap). Ein zusaetzlicher Aussenabstand wuerde ihn beim Druck
-       nur verdoppeln. */
     .tr-ringblock { break-inside: avoid; page-break-inside: avoid; }
     .tr-row { break-inside: avoid; page-break-inside: avoid; }
     a.tr-link { text-decoration: none; }
-    /* Auf Papier braucht eine Zelle nicht die 12px des Bildschirms: 14 Zeilen
-       mal 24px gespart sind gut eine halbe Seite. Ohne das !important bliebe
-       der Bildschirmabstand stehen, weil er am <td> inline steht. */
     .tr-table th, .tr-table td { padding: 4px 8px 4px 0 !important; }
   }
 </style>
 </head>
 <body>
 
-<!--   ──  DATEN - ab hier bis zum Ende des Blocks bearbeitbar.
-     Der JSON-Block muss schemaVersion, rings und entries enthalten.
-     Geschlossen wird er mit einem </textarea>.
-
-     Traeger ist absichtlich ein verstecktes textarea und kein
-     script mit type application/json: manche CMS leeren beim Speichern
-     die Inhalte unbekannter script-Typen, ein textarea ueberlebt das.
-     Als RCDATA-Element wird sein Inhalt nicht als Markup gelesen,
-     deshalb bleiben < > und & im JSON unveraendert lesbar - beim
-     Bearbeiten muss also nichts escaped werden. Die Engine akzeptiert
-     weiterhin auch script und template, siehe readEmbeddedData().
-
-     Der einzige Fall, der wirklich escaped werden muss: ein </textarea>
-     im Text wuerde den Block vorzeitig schliessen. readEmbeddedData()
-     faengt das ab und meldet es.
-     ────────────────────────────────────────────────────────────────── -->
+<!-- DATEN. Nur dieser Block wird bearbeitet. -->
 <textarea class="tr-data" id="trendradar-data" hidden aria-hidden="true" readonly>
 {
   "schemaVersion": 1,
@@ -424,27 +244,18 @@
   </div>
 </noscript>
 
-<!-- ──  ENGINE - nicht bearbeiten. Reihenfolge: pure Berechnung, dann Markup,
-     dann DOM-Verkabelung. build.js fuehrt genau diesen Block in einer
-     Node-vm aus, deshalb darf ausserhalb der Funktionen kein DOM benutzt
-     werden und es darf kein eval/new Function vorkommen.
-     ────────────────────────────────────────────────────────────────── -->
 <script id="trendradar-engine">
+/* ENGINE - Reihenfolge: Berechnung, Markup, dann DOM. */
 const TrendRadar = (function () {
   "use strict";
 
   var TAU = Math.PI * 2;
 
-  /* Die Vorgabefarben sind als Hex festgeschrieben: #020E25 Grundtext,
-     #F9FBFC Flaeche, #B30920 Aktion, #495057 Sekundaertext, #DEE2E6 und
-     #E4E5E7 feine Linien, #ADB5BD Sektorlinien, #595959 Tabellenlinien. */
   var RING_FALLBACK = ["#1F8904", "#0B70EB", "#FF8500", "#E50000", "#0dcaf0", "#3D4657"];
 
   var THEME_DEFAULT = {
     background: "#F9FBFC", ink: "#020E25", muted: "#495057",
     grid: "#DEE2E6", sectorLine: "#ADB5BD", border: "#595959",
-    /* Kontur von Bedienelementen, >= 3:1 gegen die Flaeche (WCAG 1.4.11).
-       Eigenes Token, damit das Raster des Radars unberuehrt bleibt. */
     control: "#8D8D8D",
     accent: "#B30920", rowHover: "rgba(2,14,37,.05)",
     bandOpacity: 0.12, bandOpacityAlt: 0.06,
@@ -460,17 +271,8 @@ const TrendRadar = (function () {
     size:   { mode: "auto", min: 380, max: 660, radius: 480, blip: 22, gap: 4 }
   };
 
-  /* Inline-Styles. Die statische Variante (build.js) benutzt exakt dieselben
-     Strings, damit beide Ausgaben pixelgleich sind. Farben laufen über
-     var(--tr-*, fallback): ohne <style> greift der Fallback, mit <style>
-     kann der Host die Variablen ueberschreiben. */
+  /* build.js setzt dieselben Strings als Inline-Styles. */
   var S = {
-    /* Bestaetigte Hoehe statt min-height: nur dann bekommt die Zeile
-       minmax(0,1fr) ueberhaupt eine Groesse, in der der Radar steckt. Mit
-       min-height waere die Zeilengroesse unbestimmt, der Radar wuerde
-       seine Quadratform auf die Spalte ausdehnen und die Legende
-       nach unten schieben. Die Legende scrollt intern, die Seite selbst
-       nicht – das ist das erwartete Verhalten im IFrame. */
     root: "margin:0;box-sizing:border-box;display:grid;gap:14px;padding:16px;height:100vh;height:100dvh;min-height:320px;" +
           "background:var(--tr-bg,#F9FBFC);color:var(--tr-ink,#020E25);" +
           "font-family:var(--tr-font,Roboto,Helvetica Neue,Arial,sans-serif);font-size:var(--tr-font-size,15px);" +
@@ -479,53 +281,22 @@ const TrendRadar = (function () {
     headMeta: "color:var(--tr-muted,#495057)",
     stage:
 "grid-area:stage;display:grid;place-items:center;min-height:0;min-width:0;min-height:200px;overflow:hidden",
-    /* Das SVG fuellt die Buehne exakt und wird von preserveAspectRatio
-       mittig eingepasst: es kann seine Spalte nie aufdehnen. */
     svgFit: "display:block;width:100%;height:100%;min-width:0;min-height:0",
-    /* Die Legende liegt fest unter dem Radar und scrollt fuer sich. Die
-       Obergrenze liegt bewusst unter der Haelfte des Rahmens: der Radar ist
-       das Hauptelement, die Tabelle ist Nachschlagewerk. */
     wrap: "grid-area:legend;min-height:0;max-height:38vh;max-height:38dvh;overflow:auto;display:flex;flex-direction:column;gap:10px",
     toolbar: "display:flex;gap:8px;align-items:center;justify-content:flex-end;flex:none",
-    /* Der Abstand zwischen den Tabellen ist das, was die Gruppen trennt. Mit
-       16px lag er nur ein Drittel einer Zeile hoch - die Tabelle darunter las
-       sich als Fortsetzung der oberen. 30px oben und 12px unter dem Ringnamen
-       machen die Zugehoerigkeit eindeutig: eng an die eigene Tabelle, weit von
-       der vorherigen. */
     legend: "display:flex;flex-direction:column;gap:30px",
     block: "display:block",
     ringHead: "display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:0 0 12px",
-    /* table-layout:fixed ist hier der entscheidende Punkt. Mit "auto"
-       rechnet jedes <table> die Spaltenbreiten aus seinem eigenen Inhalt
-       aus, und die bis zu sechs Ringbloecke stuenden dann gegeneinander
-       versetzt. "fixed" nimmt die Breiten aus <colgroup> und macht alle
-       Tabellen untereinander deckungsgleich. */
-    /* Tabellenraster: 12px Innenabstand rundum, eine 1px-Linie unten an
-       jeder Zelle und eine 2px-Linie unter der Kopfzeile. Keine
-       senkrechten Trenner und kein Zebra - beides wuerde die Zeilen nur
-       zerreissen. */
+  /* table-layout:fixed nimmt die Breiten aus dem colgroup. */
     table: "width:100%;border-collapse:collapse;table-layout:fixed;vertical-align:top",
     th: "text-align:left;font-size:1em;font-weight:700;color:var(--tr-ink,#020E25);" +
         "padding:12px;background:transparent;border-top:0;border-bottom:2px solid var(--tr-border,#595959)",
-    /* Jede dieser Strings wird an andere angehaengt (S.td + S.muted zum
-       Beispiel). Deshalb endet jeder davon auf einem Semikolon - sonst
-       entstehen Aufgaben wie "overflow-wrap:anywherecolor:...". */
     td: "vertical-align:top;padding:12px;color:var(--tr-ink,#020E25);background:transparent;" +
         "border-bottom:1px solid var(--tr-border,#595959);line-height:1.45;overflow-wrap:anywhere;",
     /* Die Nummerenspalte muss Badge plus 24px Innenabstand fassen. */
     tdNum: "vertical-align:top;padding:12px;color:var(--tr-ink,#020E25);background:transparent;" +
         "border-bottom:1px solid var(--tr-border,#595959);line-height:1.45;width:48px;",
-    /* Die Beschreibung wird nicht mehr gekappt. Das Kappenschnitt hat den
-       Volltext nur in den Tooltip der Zeile verlagert: fuer WCAG 1.4.13
-       (Inhalt bei Hover oder Fokus) ist Inhalt, den es nur beim Ueberfahren
-       gibt, genau das, was nicht passieren darf, und unter den Textabstaenden
-       aus 1.4.12 schnitt die Kappe noch mehr ab. Gemessen war nur eine
-       einzige von zwoelf Zellen betroffen, die dann 22px zu kurz war. */
     muted: "color:var(--tr-muted,#495057)",
-    /* Nur fuer Screenreader sichtbarer Text: die Tabellen bekommen eine
-       Beschriftung, die fuer das Auge unsichtbar bleibt. Echte width/height
-       1px plus clip, weil display:none und visibility:hidden den Text auch
-       aus dem Accessibility-Baum nehmen wuerden. */
     sr: "position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0",
     errBox: "margin:40px auto;max-width:64ch;padding:20px 24px;border:1px solid var(--tr-border,#595959);border-radius:5px;line-height:1.6"
   };
@@ -538,34 +309,20 @@ const TrendRadar = (function () {
   function isHex(c) { return typeof c === "string" && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(c.trim()); }
   function color(v, d) { return isHex(v) ? v.trim() : d; }
 
-  /* Ein Schriftstapel landet in einem style-Attribut. Anfuehrungszeichen,
-     Semikolon, spitze Klammern und Backslash fliegen deshalb raus: ein
-     Semikolon wuerde die Inline-Regel beenden und den Rest einschleusen.
-     Mehrwortfamilien ohne Anfuehrungszeichen sind gueltiges CSS, der
-     Stapel bleibt also lesbar. */
   function fontStack(v, d) {
     var clean = str(v, "").replace(/["'\\;<>{}()]/g, " ").replace(/\s+/g, " ").trim();
     return clean || d;
   }
 
-  /* Wie fontStack, nur bleiben Klammern und Kommas stehen: hier stehen
-     rgba()-Werte. */
   function cssValue(v, d) {
     var clean = str(v, "").replace(/["'\\;<>{}]/g, "").replace(/\s+/g, " ").trim();
     return clean || d;
   }
 
-  /* Verweist auf die Variable, damit der Host ueberschreiben kann, und
-     nennt den aufgeloesten Stapel als Rueckfall. Ohne den Rueckfall waere
-     die statische Variante (ohne <style> und ohne gesetzte Variablen) auf
-     die allgemeinste Sans-Schrift zurueckgefallen. */
   function fontVar(theme, head) {
     return "var(--tr-" + (head ? "head-" : "") + "font," + fontStack(head ? theme.headFont : theme.font, "sans-serif") + ")";
   }
 
-  /* Ueberschrift: die zweiteilige Schrift, feste Groesse aus dem Thema.
-     Ohne negativen Sperrung, weil eine schmale Schrift dadurch enger und
-     nicht breiter wirkt. */
   function headTitleCss(theme) {
     return "margin:0;font-family:" + fontVar(theme, true) +
       ";font-size:" + nOf(theme.headSize, 24, 10, 96) + "px;line-height:1.2;font-weight:700";
@@ -577,15 +334,6 @@ const TrendRadar = (function () {
     });
   }
 
-  /* Waehlt die Textfarbe auf einer Flaechenfarbe. Die Ziffer im Blip und das
-     Badge in der Legende sitzen beide auf der Ringfarbe, also muss die Wahl
-     die 4,5:1 aus WCAG 1.4.3 treffen.
-     Ausgangspunkt ist die Designvorgabe "Weiss"; sie bleibt, solange sie
-     besteht. Nur wenn Weiss durchfaellt, wechselt die Schrift auf fast
-     Schwarz. Die alte feste Schwelle L > 0,4 war geraten und liess Weiss auf
-     Orange stehen: 2,44:1. Gerechnet wird der Kontrast selbst
-     (1,05 / (L + 0,05)); 0,179 waere der Punkt, an dem beide Farben gleich
-     gut waeren. Von den vier Ringfarben faellt dadurch nur Orange durch. */
   function inkOn(hex) {
     var m = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.exec(String(hex).trim());
     if (!m) return "#111111";
@@ -688,8 +436,6 @@ const TrendRadar = (function () {
         sector: sector,
         description: str(e.description, ""),
         url: str(e.url, ""),
-        /* Optionales target je Eintrag, sonst gilt links.target aus der
-           Konfiguration. */
         target: (e.target === "_self" || e.target === "_blank") ? e.target : null,
         inputIndex: out.entries.length,
         ringIndex: ring.index
@@ -709,10 +455,6 @@ const TrendRadar = (function () {
     out.theme = mergeDeep(THEME_DEFAULT, data.theme);
     out.theme.showSectorLabels = data.theme && data.theme.showSectorLabels !== undefined
       ? !!data.theme.showSectorLabels : true;
-    /* Alles, was ungeprueft in ein style-Attribut wandert, kommt hier durch
-       den passenden Filter. Farben als Hex, Schriftstapel und rgba-Werte
-       ohne die Zeichen, die eine Inline-Regel beenden oder aufbrechen
-       koennten. */
     out.theme.font = fontStack(out.theme.font, THEME_DEFAULT.font);
     out.theme.headFont = fontStack(out.theme.headFont, THEME_DEFAULT.headFont);
     out.theme.rowHover = cssValue(out.theme.rowHover, THEME_DEFAULT.rowHover);
@@ -742,8 +484,6 @@ const TrendRadar = (function () {
   }
 
 
-  /* n gleichmäßig auf L Spuren verteilen; die ersten (n mod L) Spuren
-     bekommen eine Position mehr. */
   /* ── 2. Verteilung: Zahl, Spuren, Positionen ───────────────────── */
 
 
@@ -754,25 +494,6 @@ const TrendRadar = (function () {
   }
 
 
-  /* ── Platzierung: Spuren, Kapazität, Überlappung ────────────────────
-     Überlappung ist mathematisch ausgeschlossen, weil die Kapazität einer
-     Spur dort geprüft wird, wo der Bogenabstand zweier Blips am kleinsten
-     ist – also genau auf dem Radius, auf dem sie liegen:
-
-         cap_j = floor(span · rMid_j / (blip + gap))
-
-     Alle Blips einer Spur teilen denselben Radius rMid_j, also ist
-     rMid·span/count der kleinste Bogenabstand innerhalb dieser Spur. Der
-     Abstand zur Spur daruber ist laneDepth, und das ist wegen
-     L ≤ floor(depth/(blip+gap)) immer ≥ 1 · blip+gap.
-
-     Die Spuren decken das Band lückenlos ab: laneDepth = depth/L, off = 0.
-     Ein Versatz nach innen oder aussen ist gar nicht moeglich, sonst
-     verliessen Blips ihren Ring.
-
-     Unter den möglichen Spaltenzahlen gewinnt die, deren Blips in Pixeln am
-     quadratischsten wirken (Bogenabstand ≤ Spurabstand). Bei Gleichstand gewinnt
-     die kleinere Spaltenzahl, weil L aufsteigend geprüft wird. */
   function chooseLanes(n, r0, r1, span, blip, gap) {
     var depth = Math.max(1e-6, r1 - r0);
     var step = blip + gap;
@@ -803,8 +524,6 @@ const TrendRadar = (function () {
     }
     if (best) return best;
 
-    /* Nichts passt: die engste Packung, maximal viele Spuren. Der Aufrufer
-       meldet das als Überlauf, statt still zu überlappen. */
     var tight = evaluate(maxLanes);
     tight.feasible = false;
     return tight;
@@ -831,8 +550,6 @@ const TrendRadar = (function () {
     return out;
   }
 
-  /* Platziert alles bei einem gegebenen Radius. Liefert ok=false, wenn eine
-     Gruppe ihre Kapazität überschreitet – dann wächst der Aufrufer den Radius. */
   function placeAll(norm, groups, R, blip, gap) {
     var nR = norm.rings.length;
     var nS = norm.sectors.length;
@@ -858,8 +575,6 @@ const TrendRadar = (function () {
     var worst = null;
     groups.forEach(function (g) {
       var band = bands[g.ring.index];
-      /* Eine freie Gruppe (Trend ohne sector) nutzt den ganzen Umfang,
-         eine Sektorgruppe nur ihren Winkelabschnitt. */
       var span = g.sector ? delta : TAU;
       var pick = chooseLanes(g.entries.length, band.r0, band.r1, span, blip, gap);
       if (!pick.feasible) {
@@ -875,11 +590,6 @@ const TrendRadar = (function () {
       });
     });
 
-    /* Die Kapazitätsprüfung oben gilt nur INNERHALB einer Gruppe. Zwei Gruppen
-       in benachbarten Keilen können sich trotzdem zu nahe kommen: ihr
-       Winkelabstand ist bei kleinem Radius winzig. Deshalb wird der
-       tatsächliche geringste Abstand im fertigen Layout nachgemessen. Erst
-       damit ist die Zusage "keine Überlappung" belegbar. */
     var minDist = Infinity;
     for (var i = 0; i < blips.length; i++) {
       for (var k = i + 1; k < blips.length; k++) {
@@ -905,18 +615,10 @@ const TrendRadar = (function () {
     var blip = size.blip, gap = size.gap;
     var warnings = norm.warnings.slice();
 
-    /* Nummerierung: global 1..N, Sortierung innen -> außen, darin Eingabereihenfolge. */
     var entries = norm.entries.slice().sort(function (a, b) {
     });
     entries.forEach(function (e, i) { e.number = i + 1; });
 
-    /* Gruppierung: genau eine Gruppe je Ring – Sektor.
-     - Ohne "sectors" hat jeder Ring eine freie Gruppe über den ganzen Umfang.
-     - Mit "sectors" wandern Trends ohne "sector" in den jeweils am wenigsten
-       belegten Keil ihres Rings. Grund: eine Gruppe über den vollen Umfang
-       würde sich räumlich mit den Keilgruppen desselben Rings überschneiden
-       und Blips exakt übereinander legen. In der Legende bleibt ihr Sektor
-       weiterhin "-" – sie sind ja keinem Sektor zugeordnet. */
     var groups = [];
     norm.rings.forEach(function (ring) {
       var here = entries.filter(function (e) { return e.ringIndex === ring.index; });
@@ -926,7 +628,6 @@ const TrendRadar = (function () {
       }
       var buckets = norm.sectors.map(function (s) { return { ring: ring, sector: s, entries: [] }; });
       here.filter(function (e) { return !e.sector; }).forEach(function (e) {
-        /* reduce mit striktem "<" behält bei Gleichstand den ersten – deterministisch. */
         var target = buckets.reduce(function (a, b) { return b.entries.length < a.entries.length ? b : a; });
         target.entries.push(e);
       });
@@ -936,7 +637,6 @@ const TrendRadar = (function () {
       buckets.forEach(function (b) { if (b.entries.length) groups.push(b); });
     });
 
-    /* Auto-Radius: wächst, bis keine Gruppe über ihrer Kapazität liegt. */
     var R = size.mode === "fixed" ? size.radius : size.min;
     var geo = null, guard = 0, overflow = false;
     while (guard++ < 40) {
@@ -953,9 +653,6 @@ const TrendRadar = (function () {
       R = next;
     }
     if (overflow) {
-      /* Wie viel Platz wäre wirklich nötig? Das ist die Information, die man
-         zum Handeln braucht – ein geratener Wert hilft niemandem. Wir suchen
-         weiter, rendern aber weiterhin bei size.max. */
       var needR = null;
       if (size.mode !== "fixed") {
         for (var probe = size.max * 1.02, steps = 0; probe < 4000 && steps < 220; probe *= 1.02, steps++) {
@@ -969,8 +666,6 @@ const TrendRadar = (function () {
       var need = needR
         ? "Ab Radius " + Math.ceil(needR) + " wäre alles überlappungsfrei – setze \"layout.size.max\" entsprechend."
         : "Auch bei einem sehr großen Radius reicht der Platz nicht.";
-      /* Ein sehr großer Radius macht die Blips im Browser entsprechend klein –
-         darauf hinzuweisen ist ehrlicher als nur die Zahl zu nennen. */
       if (needR && needR > size.max * 2.2) {
         need += " Achtung: Bei so großem Radius sind die Blips nur noch " +
           Math.round(blip * 500 / needR) + " px breit (in einem 500 px hohen Rahmen). " +
@@ -1010,12 +705,8 @@ const TrendRadar = (function () {
       half = Math.max(half, Math.abs(l.x) + l.text.length * labelSize * 0.3, Math.abs(l.y) + labelSize * 0.7);
     });
     var W = 2 * half;
-    /* Auf zwei Nachkommastellen runden: der viewBox landet sonst mit 14
-       Stellen in der Ausgabe und die Datei wird unnötig unlesbar. */
     var vb = function (v) { return Math.round(v * 100) / 100; };
 
-    /* Blips nach Nummer sortieren, damit die Ausgabe unabhängig von der
-       Gruppierungsreihenfolge deterministisch ist. */
     geo.blips.sort(function (a, b) { return a.entry.number - b.entry.number; });
 
     return {
@@ -1027,9 +718,6 @@ const TrendRadar = (function () {
       radius: R,
       pitch: geo.pitch,
       delta: geo.delta,
-      /* Der geringste Mittelpunktabstand in Nutzereinheiten. Der Browser
-         braucht ihn, um die Punkte auf eine lesbare Bildschirmgrösse zu
-         bringen, ohne dass sie sich ueberlagern. */
       minDist: geo.minDist,
       bands: geo.bands,
       wedges: geo.wedges,
@@ -1075,10 +763,6 @@ const TrendRadar = (function () {
   function renderSVG(layout) {
     var t = layout.theme;
     var out = [];
-    /* Das SVG füllt die Bühne exakt aus und wird von preserveAspectRatio
-       mittig eingepasst. Ohne die absolute Positionierung wächst ein
-       quadratisches SVG aus seiner Rasterspalte heraus – es würde dann die
-       Zeilenhöhe aufmachen und die Legende nach unten schieben. */
     out.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + layout.viewBox + '"' +
       ' preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + esc(describe(layout)) + '"' +
       ' style="' + S.svgFit + '">');
@@ -1144,12 +828,6 @@ const TrendRadar = (function () {
 
       if (b.entry.url) {
         var bt = linkTarget(b.entry, layout.links.target);
-        /* Die Nummer steht voran, weil sie das Sichtbare im Punkt ist und
-           WCAG 2.5.3 verlangt, dass der zugaengliche Name den sichtbaren
-           Text enthaelt. Vorher stand nur der Trendname im aria-label, die
-           Ziffer daneben - Screenreader sagten einen anderen Text als das
-           Auge las. So ist die Nummer auch hoerbar und passt zur Legende,
-           auf die der Titel des Radars verweist. */
         out.push('<a class="tr-blip-link" href="' + esc(b.entry.url) + '"' +
           (bt ? ' target="' + bt + '" rel="noopener noreferrer"' : "") +
           ' style="cursor:pointer" aria-label="' +
@@ -1171,39 +849,18 @@ const TrendRadar = (function () {
       ';border-radius:3px;width:12px;height:12px;flex:none;display:inline-block;transform:translateY(1px)"></span>';
   }
 
-  /* Nummer-Badge der Legende. Die Zahl ist die des Eintrags - sie muss zum
-     Blip passen - die Farbe kommt vom Ring, damit die Ringzugehörigkeit
-     ablesbar bleibt. */
   function nrBadge(ring, n) {
     return '<span class="tr-nr" style="display:inline-flex;align-items:center;justify-content:center;' +
       'width:22px;height:22px;border-radius:50%;background:' + ring.color + ';color:' + inkOn(ring.color) +
       '">' + esc(n) + "</span>";
   }
 
-  /* Ziel eines Ankers bestimmen.
-
-     null bedeutet: gar kein target-Attribut. Das ist bei Sprungmarken
-     ("#abschnitt") richtig - ein _blank darauf wuerde nur eine zweite,
-     leere Kopie des Dokuments oeffnen, in der die Sprungmarke nicht
-     existiert. Relative Ziele ("/berichte/q3") bekommen das target aus
-     der Konfiguration, sonst wuerde die Seite im selben Tab ersetzt. */
   function linkTarget(e, def) {
     if (!e.url || e.url.charAt(0) === "#") return null;
     return e.target || def;
   }
 
-  /* Tooltip fuer die ganze Zeile. Die gespannte ::after-Flaeche des Ankers
-     liegt ueber allen Zellen und verdeckt deren Tooltips, also sammelt die
-     Zeile hier, was an zwei Stellen stand.
-
-     Nur die Adresse, nicht mehr die Beschreibung: die steht sichtbar in der
-     Spalte "Beschreibung" derselben Zeile und war im Tooltip doppelt. Das
-     ist zugleich der einzige Rest, den es hier noch zu zeigen gibt.
-
-     Ein title-Attribut ist eine Browser-Anzeige, kein Inhalt der Seite: sie
-     erscheint nicht beim Tastaturfokus und auf dem Telefon gar nicht. Sie
-     traegt hier deshalb nur eine zusaetzliche Angabe, die im href ohnehin
-     vorhanden ist - fehlt sie, geht nichts verloren. */
+  /* Tooltip der Zeile sammelt Zeilen- und Zellentooltip. */
   function rowTitle(e) {
     return e.url ? e.url : "";
   }
@@ -1217,9 +874,6 @@ const TrendRadar = (function () {
       (t ? ' target="' + t + '" rel="noopener noreferrer"' : "") + ">" + esc(e.name) + "</a>";
   }
 
-  /* Die Beschreibung traegt denselben Grundton #020E25 wie die uebrigen
-     Zellen. Der graue Sekundaerton der Palette gilt fuer Kleintext wie
-     Quellenangaben, nicht fuer den Fliesstext einer Beschreibung. */
   function descCell(e) {
     if (!e.description) return '<td data-label="Beschreibung" style="' + S.td + '">–</td>';
     return '<td data-label="Beschreibung" style="' + S.td + '"><div>' +
@@ -1228,14 +882,7 @@ const TrendRadar = (function () {
 
   /* ── 5. Legende ────────────────────────────────────────────────── */
 
-  /* Spalten und ihre Breiten stehen genau einmal hier. Kopfzeile und
-     <colgroup> werden beide aus dieser Liste gebaut, damit sie nicht
-     auseinanderlaufen koennen. "desc" bezieht den Rest.
-     Eine eigene Linkspalte gibt es nicht mehr: die ganze Zeile ist der
-     Anker, das Ziel steht im Tooltip. Damit gehoert der Platz der
-     Beschreibung.
-     Die festen Breiten beruecksichtigen den Innenabstand von 12px je Seite:
-     die Nummerenspalte braucht 24px davon plus das 22px-Badge. */
+  /* Spalten und ihre Breiten stehen genau einmal hier. */
   var COLS = {
     num:    { w: "48px", head: "Nr" },
     name:   { w: "28%",  head: "Trend" },
@@ -1246,32 +893,20 @@ const TrendRadar = (function () {
 
   function colgroup(keys) {
     return "<colgroup>" + keys.map(function (k) {
-      /* Die Klasse erlaubt dem Style-Block, die Breite auf schmalen
-         Rahmen ueber !important zu ueberschreiben; die Inline-Breite
-         bleibt der Normalfall und funktioniert auch ohne <style>. */
       return '<col class="tr-col-' + k + '" style="width:' + COLS[k].w + '">';
     }).join("") + "</colgroup>";
   }
 
-  /* scope="col" macht die Zuordnung Spaltenkopf zu Zelle explizit, statt sie
-     dem Browser zu ueberlassen. Chromium leitet sie zwar korrekt ab, aber
-     eine Pruefung nach WCAG 1.3.1 verlangt die erklaerte Beziehung. */
   function headRow(keys) {
     return "<tr>" + keys.map(function (k) {
       return '<th scope="col" style="' + S.th + '">' + COLS[k].head + "</th>";
     }).join("") + "</tr>";
   }
 
-  /* Jede Tabelle bekommt eine Beschriftung. Sie ist fuer das Auge versteckt
-     (S.sr), traegt aber den Namen der Tabelle in den Accessibility-Baum und
-     macht sie fuer Screenreader unterscheidbar - vier fast gleiche
-     Trendtabellen sind sonst nur an ihren Koepfen zu unterscheiden. */
   function tabelleCaption(text) {
     return '<caption style="' + S.sr + '">' + esc(text) + "</caption>";
   }
 
-  /* Die Spalten gelten fuer alle Tabellen der jeweiligen Ansicht, damit
-     jede Ringgruppe gleich breit aufgebaut ist. */
   function legendColumns(hasSector, withRing) {
     return ["num", "name"]
       .concat(withRing ? ["ring"] : [])
@@ -1279,11 +914,6 @@ const TrendRadar = (function () {
       .concat(["desc"]);
   }
 
-  /* Eine Tabellenzeile. Zeilen ohne Ziel bleiben stumm: kein Pointer, kein
-     Anker, kein Tooltip.
-     data-label steht an jeder Zelle: unter 576px verbirgt der Style-Block
-     die Kopfzeile und holt sich daraus die Spaltenbezeichnung - so
-     bleibt die Tabelle auch gestapelt ohne zweite Kopfzeile lesbar. */
   function legendRow(b, hasSector, withRing, target) {
     var e = b.entry;
     return '<tr class="tr-row' + (e.url ? " is-link" : "") + '" data-nr="' + e.number + '">' +
@@ -1324,11 +954,6 @@ const TrendRadar = (function () {
           '<section class="tr-ringblock" data-ring="' + esc(band.ring.id) + '"' +
             ' aria-labelledby="tr-ringname-' + band.index + '" style="' + S.block + '">' +
             '<div class="tr-ringhead" style="' + S.ringHead + '">' + chip("", band.ring) +
-            /* Der Ringkopf ist die einzige Gliederungsebene unter dem Radar.
-               Als span war er fuer Screenreader nur Text; als h2 wird jeder
-               Ring ansteuerbar und der section-Bereck bekommt seinen Namen.
-               font-size:1em und margin:0 halten die Optik gegen die
-               Vorgaben des Browsers fuer h2 unveraendert. */
             '<h2 class="tr-ringname" id="tr-ringname-' + band.index + '" style="font-family:' + fontVar(layout.theme, true) +
             ';font-weight:700;font-size:1em;margin:0">' + esc(band.ring.name) + "</h2>" +
             '<span class="tr-count" style="' + S.muted + ';font-size:0.85em">' + members.length + " Trends</span>" +
@@ -1393,9 +1018,6 @@ const TrendRadar = (function () {
       "--tr-control": theme.control,
       "--tr-accent": theme.accent,
       "--tr-row-hover": theme.rowHover,
-      /* Ohne diese beiden blieb "theme.font" und "theme.headSize" wirkungslos:
-         die Regeln referenzieren nur die Variablen, niemand hat sie bisher
-         gesetzt. */
       "--tr-font": theme.font,
       "--tr-head-font": theme.headFont,
       "--tr-font-size": theme.fontSize + "px",
@@ -1404,9 +1026,6 @@ const TrendRadar = (function () {
     };
   }
 
-  /* Dieselben Variablen als Inline-Text fuer den statischen Build. Die
-     Variablen erben auf alle Nachfahren, deshalb genuegt eine Zeile auf
-     .tr-root - auch das SVG im Inneren zieht Schrift und Farben daraus. */
   function themeVarText(theme) {
     var v = cssVars(theme), out = "";
     Object.keys(v).forEach(function (k) { out += k + ":" + v[k] + ";"; });
@@ -1430,9 +1049,6 @@ const TrendRadar = (function () {
 
     var layout = computeLayout(norm);
 
-    /* Die Flaeche haengt am Wurzel-Element, das deckungsgleich 100dvh hoch
-       ist. Beim Ueberziehen auf dem Handy wuerde darunter aber die weisse
-       Browserflaeche durchscheinen - deshalb faerbt auch <body>. */
     if (doc && doc.body && layout.theme && layout.theme.background) {
       doc.body.style.background = layout.theme.background;
     }
@@ -1447,9 +1063,6 @@ const TrendRadar = (function () {
     var toolbar = root.querySelector(".tr-toolbar");
     var legendBox = root.querySelector(".tr-legend");
 
-    /* Struktur hier und in build.js aus denselben Strings setzen. Steht hier
-       kein Style, wandern die drei Bereiche ins automatische Raster, der
-       Radar verliert seinen Platz und die Legende landet darunter. */
     if (head) head.style.cssText = S.head;
     if (stage) stage.style.cssText = S.stage;
     if (toolbar) toolbar.style.cssText = S.toolbar;
@@ -1498,40 +1111,17 @@ const TrendRadar = (function () {
       });
     }
 
-    /* paintLegend() erzeugt die Legende und setzt dabei aria-pressed. Es muss
-       deshalb NACH dem Aufbau des Toolbars laufen: vorher existieren die
-       Buttons noch nicht, die Schleife in paintLegend() laeuft ins Leere und
-       beide Schalter bleiben ohne Zustand - der aktive war dann nur an der
-       Hintergrundfarbe erkennbar. Ein Aufruf reicht, deshalb steht er hier
-       ausserhalb der Bedingung. */
+  /* paintLegend setzt aria-pressed und muss nach dem Toolbar-Aufbau laufen. */
     paintLegend();
 
-    /* Seitenraster: Kopf, Radar, Legende untereinander. Fest, ohne Messung
-       und ohne Zustaendigkeit – die Legende liegt immer unter dem Radar,
-       unabhaengig von der Rahmenbreite. */
     root.style.cssText = S.root + "border-radius:" + norm.theme.radius + "px";
     if (legendWrap) legendWrap.style.cssText = S.wrap;
 
-    /* Theme als CSS-Variablen bereitstellen – so lässt sich das Design auch
-       von aussen überschreiben, ohne die Datei anzufassen. */
     var vars = cssVars(norm.theme);
     Object.keys(vars).forEach(function (k) { root.style.setProperty(k, vars[k]); });
 
-    /* Schrift und Punktgroesse an die tatsaechliche Verkleinerung anpassen.
-       Alle Werte im SVG stehen in Nutzereinheiten des viewBox. Wie stark die
-       Grafik verkleinert wird, haengt aber von der Buehne ab und schwankt
-       ueber die Rahmenbreiten um den Faktor 3,4 (gemessen: 0,32 bei
-       1024x600 bis 1,08 bei 1920x1600). Fest notierte 13 Einheiten wurden
-       dadurch zwischen 4,3 und 14 Bildschirmpixeln gross - auf dem Handy
-       unlesbar.
-       Gerechnet wird deshalb durchgaengig in Bildschirmpixeln: "k" ist die
-       Kehrwert der Skalierung, also Nutzereinheiten je Bildschirmpixel. Eine
-       Zielgroesse von 13 Pixeln entspricht 13*k Nutzereinheiten. Beim
-       Verlaengern des Fensters wird alles neu gerechnet, die Bildschirmgroesse
-       der Schrift bleibt dabei stehen. */
     var ZIEL_LABEL = 13, ZIEL_NR = 11.4, ZIEL_BLIP = 15, MIN_LABEL = 9;
 
-    /* Rechtecke der Punkte im Bildschirmraum, einmal je Messung. */
     function blipBoxes() {
       var out = [];
       Array.prototype.forEach.call(stage.querySelectorAll(".tr-blip circle"), function (c) {
@@ -1552,16 +1142,6 @@ const TrendRadar = (function () {
       return true;
     }
 
-    /* Sektorbeschriftungen duerfen nie ueber den viewBox hinauslaufen: der
-       Browser schneidet alles ausserhalb ab. Der viewBox entsteht zur
-       Layout-Zeit aus "sectorLabelSize" in Nutzereinheiten, die Beschriftung
-       setzt fitText() aber auf ZIEL_LABEL * k Nutzereinheiten - bei k > 1
-       also um ein Vielfaches groesser. Bei 1280px ist k rund 1,83, wodurch
-       "Wirtschaft & Markt" mit 171,9 Einheiten Breite bis x = -425 lief,
-       waehrend die viewBox bei -409,42 endete: der Sektorname war dadurch
-       vollstaendig unsichtbar. Deshalb nach dem Setzen der Schriften den
-       echten Textumfang messen und den viewBox vergroessern, statt weiter
-       zu raten. */
     function viewBoxFuerLabels(svg) {
       var vb = svg.viewBox.baseVal;
       if (!vb || !vb.width) return false;
@@ -1579,8 +1159,6 @@ const TrendRadar = (function () {
         nY = Math.max(nY, o, u);
       });
       if (!zuKlein) return false;
-      /* Etwas Luft, sonst klebt der Text genau am viewBox-Rand und wirkt
-         abgeschnitten, obwohl er vollstaendig da ist. */
       nX += 6; nY += 6;
       svg.setAttribute("viewBox",
         (mitteX - nX).toFixed(2) + " " + (mitteY - nY).toFixed(2) + " " +
@@ -1597,12 +1175,6 @@ const TrendRadar = (function () {
       if (Math.abs(k - (fitText.last || 0)) < 0.02) return;
       fitText.last = k;
 
-      /* Blips auf eine lesbare Mindestgroesse bringen. Der Durchmesser steht
-         in Nutzereinheiten und schrumpft auf dem Handy auf 8,8px - kleiner als
-         die Ziffer darin. Gewachsen wird nur so weit, wie es placeAll erlaubt:
-         der geringste Mittelpunktabstand ist minDist, und placeAll fordert
-         minDist >= blip. Der kleinste Abstand geteilt durch den Durchmesser
-         ist also die Grenze, bis zu der sich die Punkte nicht ueberlagern. */
       var dUser = layout.size.blip;
       var istPx = dUser / k;
       var maxF = layout.minDist > 0 ? layout.minDist / dUser : 1;
@@ -1615,8 +1187,6 @@ const TrendRadar = (function () {
           if (!c.getAttribute("data-r")) c.setAttribute("data-r", c.getAttribute("r"));
           c.setAttribute("r", (parseFloat(c.getAttribute("data-r")) * f).toFixed(2));
         });
-        /* Die Sektorlinien beginnen am Bliprand. Wird der Punkt groesser, muss
-           die Linie mit nach aussen wandern, sonst steckt sie im Punkt. */
         Array.prototype.forEach.call(stage.querySelectorAll(".tr-sectorline"), function (l) {
           if (!l.getAttribute("data-x1")) {
             l.setAttribute("data-x1", l.getAttribute("x1"));
@@ -1627,21 +1197,12 @@ const TrendRadar = (function () {
         });
       }
 
-      /* Ziffern in den Blips: sie muessen in den gewachsenen Kreis passen.
-         Eine Ziffer ist rund 0,6em breit, dazu ein Rand von 2px je Seite.
-         Reicht der Platz nicht, weicht die Schrift zurueck - das ist besser
-         als eine Ziffer, die ueber den Punkt hinausragt. */
       var innenPx = Math.max(0, (dUser * f) / k - 4);
       var nrPx = Math.min(ZIEL_NR, innenPx / 0.6);
       Array.prototype.forEach.call(stage.querySelectorAll(".tr-blip-nr"), function (t) {
         t.style.fontSize = (nrPx * k).toFixed(2) + "px";
       });
 
-      /* Sektorbeschriftungen: so gross wie moeglich, aber ohne die Punkte zu
-         beruehren. Die Punkte sind gewachsen und reichen weiter nach aussen
-         als die Beschriftung breit ist; je nach Rahmenbreite schrumpft die
-         Schrift deshalb ein Stueck, und was selbst bei der Untergrenze nicht
-         frei bleibt, wird ausgeblendet. */
       var boxes = blipBoxes();
       Array.prototype.forEach.call(stage.querySelectorAll(".tr-sector-label"), function (t) {
         t.style.display = "";
@@ -1654,18 +1215,9 @@ const TrendRadar = (function () {
         if (!labelFits(t, boxes)) t.style.display = "none";
       });
 
-      /* Der Rand um die Punkte war in Nutzereinheiten notiert und schrumpfte
-         auf unter einem Bildschirmpixel zusammen. Dieselbe Rechnung gilt fuer
-         die Hervorhebung beim Ueberfahren, sonst waere der betonte Punkt auf
-         dem Handy feiner gezeichnet als der ruhende. */
       root.style.setProperty("--tr-blip-stroke-width", (1.5 * k).toFixed(2) + "px");
       root.style.setProperty("--tr-blip-stroke-hover", (3.5 * k).toFixed(2) + "px");
 
-      /* Passt der viewBox nicht zu den jetzt gesetzten Schriften, wird er
-         vergroessert und alles einmal neu gerechnet. Ein groesserer viewBox
-         senkt k, dadurch werden die Beschriftungen in Nutzereinheiten wieder
-         kleiner - das laeuft nach spaetestens zwei Durchlaeufen gegen. Die
-         Schleife ist trotzdem begrenzt, damit nichts endlos neu rechnet. */
       if (viewBoxFuerLabels(svg)) {
         fitText.durchlaeufe = (fitText.durchlaeufe || 0) + 1;
         if (fitText.durchlaeufe < 3) {
@@ -1679,30 +1231,19 @@ const TrendRadar = (function () {
 
     fitText();
     if (win && typeof win.ResizeObserver === "function" && stage) {
-      /* Nur die Buehne beobachtet werden: sie ist das einzige Element, dessen
-         Groesse die Skalierung bestimmt. */
       var ro = new win.ResizeObserver(fitText);
       ro.observe(stage);
     }
     if (win && win.addEventListener) {
-      /* Zweiter Weg, weil der Beobachter eine Groessenaenderung meldet, die
-         vor seinem ersten Durchlauf passiert, sonst nicht. Doppelte Aufrufe
-         sind unkritisch: fitText kehrt bei gleicher Skalierung sofort zurueck. */
       win.addEventListener("resize", fitText);
     }
 
     return layout;
   }
 
-  /* ── 4. Daten finden, einbauen, absichern ──────────────────────────
-     Der Teil, der in fremden Umgebungen entscheidet. Bewusst ohne
-     Festlegung auf ids oder Klassen: ein CMS darf umbenennen, umstellen
-     oder beim Speichern leeren, und die Datei soll trotzdem laufen. */
+  /* ── 4. Daten finden, einbauen, absichern ───────────────────────── */
 
-  /* Was ueberhaupt Daten tragen kann. Der Normaelfall ist ein verstecktes
-     textarea, weil es als RCDATA auch < > und & unveraendert laesst.
-     script und template bleiben zulaessig fuer Varianten, die von Hand
-     gebaut oder aus einem anderen Generator kommen. */
+  /* Daten kommen aus der Const, DOM-Traeger nur als Rueckfall. */
   function isCarrier(el) {
     if (!el) return false;
     var tag = el.tagName;
@@ -1721,16 +1262,10 @@ const TrendRadar = (function () {
     return el.textContent || "";
   }
 
-  /* Damit werden JSON-LD-Blöcke und andere Nebensachen aussortiert, die
-     zwar gültiges JSON liefern aber nichts mit dem Radar zu tun haben. */
   function looksLikeData(d) {
     return !!(d && typeof d === "object" && !Array.isArray(d) && (d.rings || d.entries || d.schemaVersion));
   }
 
-  /* Die Daten gehören zu genau einem Radar. Deshalb wird nicht global per
-     id gesucht, sondern der nächste Träger oberhalb des Wurzelelements
-     genommen, erster Treffer gewinnt. Damit laufen mehrere Radars auf
-     einer Seite nebeneinander, ohne dass eine id eindeutig sein muss. */
   function carriersBefore(root, doc) {
     var out = [];
     function add(el) { if (isCarrier(el) && out.indexOf(el) < 0) out.push(el); }
@@ -1738,9 +1273,6 @@ const TrendRadar = (function () {
     while (node && node !== doc.documentElement) {
       var sib = node.previousElementSibling;
       while (sib) {
-        /* Das Geschwister selbst zuerst, danach was darin steckt. Ohne den
-           ersten Schritt fiele ein nacktes textarea neben dem Radar durch:
-           es hat keine Nachfahren und kaeme nie in die Liste. */
         add(sib);
         if (sib.querySelectorAll) {
           var found = sib.querySelectorAll("textarea, script, template");
@@ -1809,16 +1341,6 @@ const TrendRadar = (function () {
     return first;
   }
 
-  /* Manche CMS bauen den Block clientseitig neu auf: React setzt beim
-     Hydrieren den Inhalt von .tr-root zurück, danach steht die leere Box
-     da. Ein Beobachter auf genau diese zwei Stellen fängt das ab und baut
-     neu auf.
-
-     Begrenzt aus zwei Gründen. Erstens darf eine Seite, die dauernd neu
-     rendert, nicht in einer Schleife hängen: nach vier Neuaufbauten
-     innerhalb von zwei Sekunden wird aufgegeben und gewarnt. Zweitens
-     kostet der Beobachter auch im Erfolgsfall fast nichts, weil er nur die
-     eigene Box und deren Geschwister meldet. */
   function guardAgainstReset(root, doc, index) {
     var win = doc.defaultView;
     if (!win || typeof win.MutationObserver !== "function") return;
@@ -1869,9 +1391,6 @@ const TrendRadar = (function () {
   if (typeof document !== "undefined") {
     function boot(doc) {
       if (doc.querySelector(".tr-root")) { autoInit(doc); return; }
-      /* Der Block kann auch erst später kommen. Ein CMS, das seinen Inhalt
-         erst nach dem Laden rendert, liefert zur Startzeit kein .tr-root.
-         Dann wird kurz nachgesehen, statt still nichts zu tun. */
       var win = doc.defaultView;
       if (!win || !win.setInterval) return;
       var tries = 0;

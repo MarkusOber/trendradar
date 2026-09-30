@@ -1,21 +1,9 @@
-/* Entfernt Kommentare aus trendradar.html und schreibt das Ergebnis
-   als kommentarbereinigte Fassung.
+/* Entfernt Kommentare aus trendradar.html und schreibt das Ergebnis.
+   Nutzt einen Zustandsautomaten, kein Regex, weil die Datei Regex-Literale
+   und Strings mit Zeilenumbruechen enthaelt.
 
-   Kein Regex-Ersatz auf den ganzen Text: der Code enthaelt Regex-Literale
-   (replace(/["'\\;<>{}]/g ...)), Zeilenkommentare in Strings mit "https://"
-   und ein JSON-Datenblock mit Kommentaren. Ein blinder /\/\*.*?\*\// lauefe
-   mitten in ein Regex hinein. Deshalb ein echter Zustandsautomat, der
-   Zeichen fuer Zeichen laeuft und weiss, ob er in einem String, einem
-   Regex-Literal, einem CSS-Block oder einem Skript steht.
-
-   Leere Zeilen und Einrueckung entfernt nur --kompakt. Zeilenumbrueche
-   bleiben dabei erhalten: in JavaScript kann das Weglassen eines Umbruchs
-   die Bedeutung aendern, weil der Parser an neuen Zeilen Trennstellen
-   erkennt ("return" am Zeilenende, automatische Semikolons). Nur die
-   Leerzeichen am Zeilenanfang sind gefahrlos.
-
-   Aufruf:  node strip-kommentare.js <quelle> <ziel> [--kompakt]
-*/
+     node strip-kommentare.js trendradar.html trendradar-lean.html
+     node strip-kommentare.js trendradar.html x.html --kompakt */
 "use strict";
 
 const fs = require("fs");
@@ -32,8 +20,6 @@ const stat = {
   regexLiterals: 0, strings: 0, unterminated: []
 };
 
-/* Nach welchem Zeichen darf ein / einen Regex eroeffnen? Nach einer
-   Zahl, einem Bezeichner, ) oder ] waere es eine Division. */
 const REGEX_AFTER_KEYWORD = new Set([
   "return", "typeof", "instanceof", "in", "of", "new", "delete", "void",
   "throw", "case", "do", "else", "yield", "await"
@@ -59,9 +45,6 @@ function isStarSlashComment(src, i) {
   return src[i] === "/" && src[i + 1] === "*";
 }
 
-/* Sammelt CSS-Kommentare in Strings. Sollte es im Dokument nicht
-   geben - dann stimmt die Annahme, dass Strings keine Kommentare
-   enthalten, und das Skript meldet es. */
 function scanStringForComment(text, kind) {
   if (text.indexOf("/*") >= 0) {
     stat.unterminated.push(kind + " mit /* im String: " +
@@ -217,15 +200,6 @@ while (i < s.length) {
   }
 }
 
-/* Leerzeilen und Einrueckung. Beides nur am Zeilenanfang und nur fuer
-   Zeilen, die nach dem Leerzeichenschnitt nichts mehr tragen. Der
-   Umbruch selbst bleibt: in JavaScript aendert ein fehlender Umbruch
-   die Bedeutung, weil der Parser dort Trennstellen erkennt - ein
-   "return" am Zeilenende holt sich sonst sein Argument von der
-   naechsten Zeile, und automatisch eingesetzte Semikolons fallen weg.
-   CSS ist unkritisch, solange kein Selector und kein Wert am Umbruch
-   zerschlagen wird; eine URL in content:() ist hier nicht vorhanden,
-   sonst muesste sie geschuetzt werden. */
 if (kompakt) {
   const zeilen = out.split("\n");
   const vorher = zeilen.length;
